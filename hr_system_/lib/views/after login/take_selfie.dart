@@ -9,7 +9,7 @@ import '../../controllers/selfie_controller.dart';
 import 'signature_screen.dart';
 
 class TakeSelfiePage extends StatefulWidget {
-  final String token; // ✅ بدل userId صار token
+  final String token; // بدل userId صار token
 
   const TakeSelfiePage({Key? key, required this.token}) : super(key: key);
 
@@ -27,7 +27,7 @@ class _TakeSelfiePageState extends State<TakeSelfiePage> {
     _checkIfProfileComplete();
   }
 
-  // ✅ افحص إذا أنهى كل الخطوات، إذا نعم أرسله للدشبورد
+  // فحص إذا أنهى كل الخطوات، إذا نعم أرسله للدشبورد
   Future<void> _checkIfProfileComplete() async {
     final prefs = await SharedPreferences.getInstance();
     final selfieDone = prefs.getBool('selfie_done') ?? false;
@@ -99,7 +99,7 @@ class _TakeSelfiePageState extends State<TakeSelfiePage> {
               ),
               const SizedBox(height: 8),
 
-              // ⚠️ رسالة تحذير
+              // رسالة تحذير
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(12),
@@ -129,7 +129,7 @@ class _TakeSelfiePageState extends State<TakeSelfiePage> {
 
               const SizedBox(height: 18),
 
-              // ℹ️ تعليمات التقاط السيلفي
+              // تعليمات التقاط السيلفي
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
@@ -157,7 +157,7 @@ class _TakeSelfiePageState extends State<TakeSelfiePage> {
 
               const SizedBox(height: 14),
 
-              // 📷 زر الكاميرا
+              // زر الكاميرا
               InkWell(
                 onTap: controller.isLoading.value ? null : _pickImage,
                 borderRadius: BorderRadius.circular(100),
