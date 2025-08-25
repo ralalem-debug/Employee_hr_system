@@ -25,22 +25,6 @@ class _SignatureScreenState extends State<SignatureScreen> {
     SignatureUploadController(),
   );
 
-  @override
-  void initState() {
-    super.initState();
-    _checkIfSignatureDone();
-  }
-
-  // تحقق إذا المستخدم وقع سابقًا
-  Future<void> _checkIfSignatureDone() async {
-    final prefs = await SharedPreferences.getInstance();
-    if (prefs.getBool('signature_done') == true) {
-      Future.delayed(Duration.zero, () {
-        Get.offAll(() => const HomeScreen());
-      });
-    }
-  }
-
   // تحويل البايتات لصورة وحفظها مؤقتاً
   Future<File> _bytesToFile(Uint8List data) async {
     final dir = await getTemporaryDirectory();
@@ -71,7 +55,8 @@ class _SignatureScreenState extends State<SignatureScreen> {
     bool success = await _controller.uploadSignature(file, employeeId);
 
     if (success) {
-      await prefs.setBool('signature_done', true); // سجل أنه تم التوقيع بنجاح
+      await prefs.setBool('signature_done', true);
+      // ✅ بس بعد التوقيع يروح على الـ Home
       Get.offAll(() => const HomeScreen());
     } else {
       Get.snackbar("Error", _controller.errorMessage ?? "Failed to upload");
@@ -158,17 +143,18 @@ class _SignatureScreenState extends State<SignatureScreen> {
                           ),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Icon(
+                            children: const [
+                              Icon(
                                 Icons.info_outline_rounded,
                                 color: Colors.amber,
                                 size: 28,
                               ),
-                              const SizedBox(width: 12),
-                              const Expanded(
+                              SizedBox(width: 12),
+                              Expanded(
                                 child: Text(
                                   "Please note:\n"
-                                  "Your signature will be securely stored and used by the company for all official internal approvals and processes. Make sure your signature is clear and represents your authorization. If you have any concerns, please contact HR before submitting.",
+                                  "Your signature will be securely stored and used by the company for all official internal approvals and processes. "
+                                  "Make sure your signature is clear and represents your authorization. If you have any concerns, please contact HR before submitting.",
                                   style: TextStyle(
                                     color: Colors.black87,
                                     fontSize: 15,
