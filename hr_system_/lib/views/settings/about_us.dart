@@ -16,10 +16,8 @@ class AboutUsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("About Us"),
-        backgroundColor: Colors.blue,
-      ),
+      appBar: AppBar(backgroundColor: const Color.fromARGB(255, 255, 255, 255)),
+
       body: Center(
         child: ElevatedButton.icon(
           onPressed: _openLink,

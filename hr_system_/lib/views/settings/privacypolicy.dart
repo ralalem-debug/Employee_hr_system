@@ -17,10 +17,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Privacy Policy"),
-        backgroundColor: Colors.blue,
-      ),
+      appBar: AppBar(backgroundColor: const Color.fromARGB(255, 255, 255, 255)),
       body: Center(
         child: ElevatedButton.icon(
           onPressed: _openLink,
