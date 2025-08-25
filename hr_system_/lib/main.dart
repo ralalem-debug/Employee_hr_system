@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hr_system_/views/after%20login/change_password_screen.dart';
 import 'package:hr_system_/views/notification_page.dart';
-import 'package:hr_system_/views/settings_page.dart';
+import 'package:hr_system_/views/settings/about_us.dart';
+import 'package:hr_system_/views/settings/privacypolicy.dart';
+import 'package:hr_system_/views/settings/settings_page.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'views/splash_screen.dart';
 import 'views/login_screen.dart';
@@ -63,6 +65,8 @@ class OnsetWayApp extends StatelessWidget {
           },
         ),
         GetPage(name: '/profile', page: () => ProfileScreen()),
+        GetPage(name: '/aboutus', page: () => AboutUsScreen()),
+        GetPage(name: '/privacypolicy', page: () => PrivacyPolicyScreen()),
       ],
     );
   }
