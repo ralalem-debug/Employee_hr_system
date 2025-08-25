@@ -58,7 +58,12 @@ class _LoginScreenState extends State<LoginScreen>
 
     if (success) {
       if (_controller.isFirstLogin.value) {
-        Get.offAll(() => ChangePasswordScreen(token: _controller.token ?? ""));
+        Get.offAll(
+          () => ChangePasswordScreen(
+            token: _controller.token ?? "",
+            isFirstLogin: _controller.isFirstLogin.value,
+          ),
+        );
       } else {
         Get.offAll(() => TakeSelfiePage(token: _controller.token ?? ""));
       }

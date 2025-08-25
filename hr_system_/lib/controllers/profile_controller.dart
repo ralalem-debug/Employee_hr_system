@@ -10,18 +10,15 @@ import 'package:dio/dio.dart' as dio;
 import 'package:open_filex/open_filex.dart';
 
 class ProfileController extends GetxController {
-  // البيانات
   var personalInfo = Rxn<PersonalInfoModel>();
   var professionalInfo = Rxn<ProfessionalInfoModel>();
   var documents = Rxn<DocumentsModel>();
 
-  // حالة التحميل والخطأ
   var isLoading = false.obs;
   var error = RxnString();
 
   final String baseUrl = "http://192.168.1.213";
 
-  // 🟢 Helper لجلب التوكن والـ employeeId من التخزين
   Future<Map<String, String>> _getAuthData() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token') ?? '';
@@ -29,7 +26,6 @@ class ProfileController extends GetxController {
     return {"token": token, "employeeId": employeeId};
   }
 
-  // ✅ جلب البيانات كلها
   Future<void> fetchProfile() async {
     isLoading.value = true;
     error.value = null;

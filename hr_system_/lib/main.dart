@@ -54,7 +54,13 @@ class OnsetWayApp extends StatelessWidget {
         GetPage(name: '/notifications', page: () => NotificationsScreen()),
         GetPage(
           name: '/change_pass',
-          page: () => ChangePasswordScreen(token: Get.arguments),
+          page: () {
+            final args = Get.arguments as Map<String, dynamic>;
+            return ChangePasswordScreen(
+              token: args['token'],
+              isFirstLogin: args['isFirstLogin'] ?? false,
+            );
+          },
         ),
         GetPage(name: '/profile', page: () => ProfileScreen()),
       ],

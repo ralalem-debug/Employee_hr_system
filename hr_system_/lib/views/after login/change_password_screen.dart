@@ -1,16 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hr_system_/views/after login/take_selfie.dart';
+import 'package:hr_system_/views/home_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../controllers/change_password_controller.dart';
 
 class ChangePasswordScreen extends StatelessWidget {
-  final String token; // ✅ بدل userId صار token
+  final String token;
+  final bool isFirstLogin; // ⬅️ نستقبلها من LoginController
 
   final _newPassController = TextEditingController();
   final _confirmPassController = TextEditingController();
 
-  ChangePasswordScreen({super.key, required this.token});
+  ChangePasswordScreen({
+    super.key,
+    required this.token,
+    required this.isFirstLogin,
+  });
 
   final ChangePasswordController controller = Get.put(
     ChangePasswordController(),
@@ -36,12 +42,14 @@ class ChangePasswordScreen extends StatelessWidget {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('selfie_done', false);
       await prefs.setBool('signature_done', false);
-
-      // 🔹 احفظ التوكن إذا لسه مش محفوظ
       await prefs.setString('token', token);
 
-      // ✅ انتقل لصفحة السيلفي مع التوكن
-      Get.offAll(() => TakeSelfiePage(token: token));
+      // ✅ Navigation logic based on isFirstLogin
+      if (isFirstLogin) {
+        Get.offAll(() => TakeSelfiePage(token: token));
+      } else {
+        Get.offAll(() => const HomeScreen());
+      }
     } else {
       Get.snackbar(
         'Error',
