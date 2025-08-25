@@ -67,6 +67,8 @@ class OnsetWayApp extends StatelessWidget {
         GetPage(name: '/profile', page: () => ProfileScreen()),
         GetPage(name: '/aboutus', page: () => AboutUsScreen()),
         GetPage(name: '/privacypolicy', page: () => PrivacyPolicyScreen()),
+
+        GetPage(name: '/privacypolicy', page: () => PrivacyPolicyScreen()),
       ],
     );
   }
