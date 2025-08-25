@@ -2,11 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hr_system_/views/after%20login/change_password_screen.dart';
 import 'package:hr_system_/views/notification_page.dart';
-<<<<<<< HEAD
-=======
 import 'package:hr_system_/views/settings/about_us.dart';
 import 'package:hr_system_/views/settings/privacypolicy.dart';
->>>>>>> 2265dd68297062975891d110e94bb810b8a028b2
 import 'package:hr_system_/views/settings/settings_page.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'views/splash_screen.dart';
