@@ -63,7 +63,7 @@ class _TakeSelfiePageState extends State<TakeSelfiePage> {
     if (success) {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('selfie_done', true);
-      Get.offAll(() => const SignatureScreen());
+      Get.offAll(() => const SignatureScreen()); // go to signature next
     } else {
       Get.snackbar("Error", controller.errorMessage ?? "Failed to upload");
     }

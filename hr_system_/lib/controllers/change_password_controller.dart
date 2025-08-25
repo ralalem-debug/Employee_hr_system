@@ -14,30 +14,46 @@ class ChangePasswordController extends GetxController {
     isLoading.value = true;
     errorMessage = null;
 
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token');
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
 
-    final url = Uri.parse('http://192.168.1.213/api/Auth/change-password');
-    final res = await http.put(
-      url,
+      if (token == null || token.isEmpty) {
+        errorMessage = "Missing authentication token!";
+        isLoading.value = false;
+        return false;
+      }
 
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer $token",
-      },
-      body: jsonEncode({
-        "newPassword": newPassword,
-        "confirmPassword": confirmPassword,
-      }),
-    );
+      final url = Uri.parse('http://192.168.1.213/api/Auth/change-password');
+      final res = await http.put(
+        url,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+          "accept": "application/json", // optional but safer
+        },
+        body: jsonEncode({
+          "newPassword": newPassword,
+          "confirmPassword": confirmPassword,
+        }),
+      );
 
-    isLoading.value = false;
+      isLoading.value = false;
 
-    if (res.statusCode == 200) {
-      return true;
-    } else {
-      errorMessage =
-          jsonDecode(res.body)['message'] ?? "Failed to change password!";
+      if (res.statusCode == 200) {
+        return true;
+      } else {
+        try {
+          final body = jsonDecode(res.body);
+          errorMessage = body['message'] ?? "Failed to change password!";
+        } catch (_) {
+          errorMessage = "Failed to change password! (${res.statusCode})";
+        }
+        return false;
+      }
+    } catch (e) {
+      isLoading.value = false;
+      errorMessage = "Error: $e";
       return false;
     }
   }
