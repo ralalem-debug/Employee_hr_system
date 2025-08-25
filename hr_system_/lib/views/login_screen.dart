@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hr_system_/views/after%20login/change_password_screen.dart';
-import 'package:hr_system_/views/after%20login/take_selfie.dart';
+import 'package:hr_system_/views/home_screen.dart';
 import '../controllers/login_controller.dart';
 import '../models/login_model.dart';
 import 'forgetpass/forget_password_screen.dart';
@@ -65,7 +65,7 @@ class _LoginScreenState extends State<LoginScreen>
           ),
         );
       } else {
-        Get.offAll(() => TakeSelfiePage(token: _controller.token ?? ""));
+        Get.offAll(() => const HomeScreen());
       }
     }
   }
