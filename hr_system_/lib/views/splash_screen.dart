@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'login_screen.dart';
+import 'home_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -19,7 +22,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 1200),
+      duration: const Duration(milliseconds: 1200),
     );
 
     _fadeIn = Tween<double>(
@@ -29,12 +32,18 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller.forward();
 
-    Future.delayed(Duration(seconds: 3), () {
-      Navigator.pushReplacement(
-        // ignore: use_build_context_synchronously
-        context,
-        MaterialPageRoute(builder: (_) => LoginScreen()),
-      );
+    // بعد 3 ثواني، قرر وين يروح
+    Future.delayed(const Duration(seconds: 3), () async {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+
+      if (token != null && token.isNotEmpty) {
+        // المستخدم مسجّل قبل → مباشرة على Home
+        Get.offAll(() => const HomeScreen());
+      } else {
+        // ما في تسجيل دخول → روح على Login
+        Get.offAll(() => const LoginScreen());
+      }
     });
   }
 
@@ -49,7 +58,6 @@ class _SplashScreenState extends State<SplashScreen>
               child: Image.asset('images/bg_pattern.png', fit: BoxFit.cover),
             ),
           ),
-
           Center(
             child: FadeTransition(
               opacity: _fadeIn,
