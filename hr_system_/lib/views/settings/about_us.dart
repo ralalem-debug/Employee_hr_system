@@ -8,10 +8,8 @@ class AboutUsScreen extends StatelessWidget {
 
   Future<void> _openLink() async {
     final uri = Uri.parse(_url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      throw "Could not launch $_url";
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      throw Exception("Could not launch $_url");
     }
   }
 

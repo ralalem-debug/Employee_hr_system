@@ -8,10 +8,9 @@ class PrivacyPolicyScreen extends StatelessWidget {
 
   Future<void> _openLink() async {
     final uri = Uri.parse(_url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      throw "Could not launch $_url";
+    final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!launched) {
+      throw Exception("Could not launch $_url");
     }
   }
 
