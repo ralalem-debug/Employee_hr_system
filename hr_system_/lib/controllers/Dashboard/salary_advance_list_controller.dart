@@ -11,8 +11,9 @@ class SalaryAdvanceListController extends GetxController {
   var error = RxnString();
 
   static const String getUrl =
-      'http://192.168.1.213/api/SalaryAdvance/employee-requests';
-  static const String deleteUrl = 'http://192.168.1.213/api/SalaryAdvance/';
+      'http://192.168.1.131:5005/api/SalaryAdvance/employee-requests';
+  static const String deleteUrl =
+      'http://192.168.1.131:5005/api/SalaryAdvance/';
 
   Future<void> fetchRequests() async {
     isLoading.value = true;

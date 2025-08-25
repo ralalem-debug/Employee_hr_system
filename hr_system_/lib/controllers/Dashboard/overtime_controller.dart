@@ -19,7 +19,7 @@ class OvertimeController extends GetxController {
   var error = RxnString();
 
   static const String apiUrl =
-      'http://192.168.1.213/api/overtime/employee/send-request';
+      'http://192.168.1.131:5005/api/overtime/employee/send-request';
 
   Future<void> sendOvertime() async {
     final date = dateController.text.trim();

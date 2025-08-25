@@ -320,7 +320,7 @@ class _LeavesListViewState extends State<LeavesListView> {
                                   builder:
                                       (ctx) => Dialog(
                                         child: Image.network(
-                                          "http://192.168.1.213/${req.documentUrl}",
+                                          "http://192.168.1.131:5005/${req.documentUrl}",
                                           fit: BoxFit.contain,
                                           errorBuilder:
                                               (_, __, ___) => const Icon(
@@ -374,7 +374,7 @@ class _LeavesListViewState extends State<LeavesListView> {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(6),
                       child: Image.network(
-                        "http://192.168.1.213/${req.documentUrl}",
+                        "http://192.168.1.131:5005/${req.documentUrl}",
                         height: 120,
                         fit: BoxFit.contain,
                         errorBuilder:

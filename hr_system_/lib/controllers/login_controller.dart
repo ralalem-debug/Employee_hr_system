@@ -22,7 +22,7 @@ class LoginController extends GetxController {
   Future<bool> login(LoginModel model) async {
     isLoading.value = true;
 
-    final url = Uri.parse('http://192.168.1.213/api/Auth/login');
+    final url = Uri.parse('http://192.168.1.131:5005/api/Auth/login');
 
     try {
       final res = await http.post(

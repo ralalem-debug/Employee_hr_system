@@ -33,7 +33,7 @@ class BreakController extends GetxController {
       }
 
       final response = await http.get(
-        Uri.parse("http://192.168.1.213/api/Breaks"),
+        Uri.parse("http://192.168.1.131:5005/api/Breaks"),
         headers: {"Authorization": "Bearer $token", "accept": "*/*"},
       );
 
@@ -59,7 +59,7 @@ class BreakController extends GetxController {
     if (token == null) return null;
 
     final res = await http.post(
-      Uri.parse('http://192.168.1.213/api/Breaks/start-break'),
+      Uri.parse('http://192.168.1.131:5005/api/Breaks/start-break'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
@@ -84,7 +84,7 @@ class BreakController extends GetxController {
     if (token == null) return null;
 
     final res = await http.post(
-      Uri.parse('http://192.168.1.213/api/Breaks/end-break'),
+      Uri.parse('http://192.168.1.131:5005/api/Breaks/end-break'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
@@ -107,7 +107,7 @@ class BreakController extends GetxController {
     if (token == null) return null;
     final res = await http.get(
       Uri.parse(
-        'http://192.168.1.213/api/Breaks/breaks/$breakId/remaining-time',
+        'http://192.168.1.131:5005/api/Breaks/breaks/$breakId/remaining-time',
       ),
       headers: {'Authorization': 'Bearer $token', 'accept': '*/*'},
     );

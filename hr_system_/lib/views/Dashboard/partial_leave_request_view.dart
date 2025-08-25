@@ -121,7 +121,7 @@ class _LeaveRequestViewState extends State<PartialLeaveRequestView> {
     try {
       final res = await http.post(
         Uri.parse(
-          'http://192.168.1.213/api/employee/request-partial-day-leave',
+          'http://192.168.1.131:5005/api/employee/request-partial-day-leave',
         ),
         headers: {
           'Authorization': 'Bearer $jwtToken',

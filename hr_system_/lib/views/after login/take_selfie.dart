@@ -35,7 +35,6 @@ class _TakeSelfiePageState extends State<TakeSelfiePage> {
     bool success = await controller.uploadSelfie(_selfie!, widget.token);
 
     if (success) {
-      // ✅ بعد السيلفي يروح على صفحة التوقيع
       Get.offAll(() => const SignatureScreen());
     } else {
       Get.snackbar("Error", controller.errorMessage ?? "Failed to upload");

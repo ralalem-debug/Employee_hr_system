@@ -13,7 +13,7 @@ class NoteController extends GetxController {
   var isLoading = false.obs;
   var error = RxnString();
 
-  static const String apiUrl = 'http://192.168.1.213/api/notes/send-note';
+  static const String apiUrl = 'http://192.168.1.131:5005/api/notes/send-note';
 
   // Send note to API
   Future<void> sendNote() async {

@@ -42,7 +42,6 @@ class _SignatureScreenState extends State<SignatureScreen> {
 
     bool success = await _controller.uploadSignature(file, "employee");
     if (success) {
-      // ✅ بعد التوقيع → على الهوم
       Get.offAll(() => const HomeScreen());
     } else {
       Get.snackbar("Error", _controller.errorMessage ?? "Failed to upload");
@@ -83,7 +82,6 @@ class _SignatureScreenState extends State<SignatureScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        // صندوق التوقيع
                         Container(
                           decoration: BoxDecoration(
                             color: Colors.grey[200],
@@ -101,7 +99,6 @@ class _SignatureScreenState extends State<SignatureScreen> {
                         ),
                         const SizedBox(height: 18),
 
-                        // الأزرار
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -119,7 +116,6 @@ class _SignatureScreenState extends State<SignatureScreen> {
 
                         const SizedBox(height: 30),
 
-                        // الملاحظة
                         Container(
                           padding: const EdgeInsets.symmetric(
                             vertical: 13,

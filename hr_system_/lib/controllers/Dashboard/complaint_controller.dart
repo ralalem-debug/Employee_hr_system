@@ -14,7 +14,7 @@ class ComplaintController extends GetxController {
   var error = RxnString();
 
   static const String apiUrl =
-      'http://192.168.1.213/api/complaints/send-complaint';
+      'http://192.168.1.131:5005/api/complaints/send-complaint';
 
   Future<void> sendComplaint() async {
     final subject = subjectController.text.trim();

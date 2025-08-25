@@ -11,8 +11,9 @@ class ComplaintsListController extends GetxController {
   var error = RxnString();
 
   static const String getUrl =
-      'http://192.168.1.213/api/complaints/employee-complaints';
-  static const String deleteUrl = 'http://192.168.1.213/api/complaints/delete/';
+      'http://192.168.1.131:5005/api/complaints/employee-complaints';
+  static const String deleteUrl =
+      'http://192.168.1.131:5005/api/complaints/delete/';
 
   Future<void> fetchComplaints() async {
     isLoading.value = true;

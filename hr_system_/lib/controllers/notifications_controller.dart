@@ -54,7 +54,7 @@ class NotificationsController extends GetxController {
   }
 
   Future<void> fetchNotifications() async {
-    const url = 'http://192.168.1.213/api/Auth/my-notifications';
+    const url = 'http://192.168.1.131:5005/api/Auth/my-notifications';
 
     try {
       isLoading.value = true;

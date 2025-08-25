@@ -17,7 +17,7 @@ class ProfileController extends GetxController {
   var isLoading = false.obs;
   var error = RxnString();
 
-  final String baseUrl = "http://192.168.1.213";
+  final String baseUrl = "http://192.168.1.131:5005";
 
   Future<Map<String, String>> _getAuthData() async {
     final prefs = await SharedPreferences.getInstance();

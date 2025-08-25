@@ -17,7 +17,7 @@ class LeaveListController {
     if (order != null) queryParams['order'] = order;
 
     final uri = Uri.http(
-      '192.168.1.213',
+      '192.168.1.131:5005',
       '/api/employee/list-of-leave-requests',
       queryParams,
     );

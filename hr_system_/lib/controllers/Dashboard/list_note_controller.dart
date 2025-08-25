@@ -10,8 +10,9 @@ class NotesListController extends GetxController {
   var isLoading = false.obs;
   var error = RxnString();
 
-  static const String getUrl = 'http://192.168.1.213/api/notes/Employee-notes';
-  static const String deleteUrl = 'http://192.168.1.213/api/notes/delete/';
+  static const String getUrl =
+      'http://192.168.1.131:5005/api/notes/Employee-notes';
+  static const String deleteUrl = 'http://192.168.1.131:5005/api/notes/delete/';
 
   // Fetch notes from API
   Future<void> fetchNotes() async {

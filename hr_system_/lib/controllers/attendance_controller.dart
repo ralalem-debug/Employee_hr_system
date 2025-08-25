@@ -4,9 +4,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/attendance_model.dart';
 
 class AttendanceController {
-  final String baseUrl = 'http://192.168.1.213/api/attendance';
+  final String baseUrl = 'http://192.168.1.131:5005/api/attendance';
 
-  /// ✅ جلب بيانات اليوم (CheckIn, CheckOut, TotalHours)
+  ///(CheckIn, CheckOut, TotalHours)
   Future<AttendanceModel?> fetchCheckInOutTime() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token');

@@ -15,7 +15,7 @@ class ResignationRequestController extends GetxController {
   var error = RxnString();
 
   static const String apiUrl =
-      'http://192.168.1.213/api/resignations/send-resignation';
+      'http://192.168.1.131:5005/api/resignations/send-resignation';
 
   Future<void> sendResignation() async {
     final note = noteController.text.trim();
