@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:hr_system_/views/home_screen.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../controllers/selfie_controller.dart';
@@ -19,28 +18,6 @@ class TakeSelfiePage extends StatefulWidget {
 class _TakeSelfiePageState extends State<TakeSelfiePage> {
   File? _selfie;
   final controller = Get.put(SelfieController());
-
-  @override
-  void initState() {
-    super.initState();
-    _checkIfProfileComplete();
-  }
-
-  Future<void> _checkIfProfileComplete() async {
-    final prefs = await SharedPreferences.getInstance();
-    final selfieDone = prefs.getBool('selfie_done') ?? false;
-    final signatureDone = prefs.getBool('signature_done') ?? false;
-
-    if (selfieDone && signatureDone) {
-      Future.delayed(Duration.zero, () {
-        Get.offAll(() => const HomeScreen());
-      });
-    } else if (selfieDone) {
-      Future.delayed(Duration.zero, () {
-        Get.offAll(() => const SignatureScreen());
-      });
-    }
-  }
 
   Future<void> _pickImage() async {
     final picked = await ImagePicker().pickImage(
@@ -61,6 +38,8 @@ class _TakeSelfiePageState extends State<TakeSelfiePage> {
     if (success) {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('selfie_done', true);
+
+      // ✅ بعد السيلفي يروح على صفحة التوقيع
       Get.offAll(() => const SignatureScreen());
     } else {
       Get.snackbar("Error", controller.errorMessage ?? "Failed to upload");
@@ -100,7 +79,7 @@ class _TakeSelfiePageState extends State<TakeSelfiePage> {
                 ),
                 const SizedBox(height: 8),
 
-                // Warning message
+                // Warning
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(12),
@@ -130,7 +109,7 @@ class _TakeSelfiePageState extends State<TakeSelfiePage> {
 
                 const SizedBox(height: 18),
 
-                // Selfie instructions
+                // Instructions
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(
@@ -224,7 +203,7 @@ class _TakeSelfiePageState extends State<TakeSelfiePage> {
                   textAlign: TextAlign.center,
                 ),
 
-                const SizedBox(height: 24), // add bottom spacing
+                const SizedBox(height: 24),
               ],
             ),
           ),
