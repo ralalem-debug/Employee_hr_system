@@ -41,20 +41,17 @@ class ChangePasswordScreen extends StatelessWidget {
     if (success) {
       final prefs = await SharedPreferences.getInstance();
 
-      // ✅ Reset selfie & signature only if it's the first login
+      // Only reset if it is really first login
       if (isFirstLogin) {
         await prefs.setBool('selfie_done', false);
         await prefs.setBool('signature_done', false);
+        Get.offAll(() => TakeSelfiePage(token: token));
+      } else {
+        // Not first login → go directly to home
+        Get.offAll(() => const HomeScreen());
       }
 
       await prefs.setString('token', token);
-
-      // Navigation
-      if (isFirstLogin) {
-        Get.offAll(() => TakeSelfiePage(token: token));
-      } else {
-        Get.offAll(() => const HomeScreen());
-      }
     } else {
       Get.snackbar(
         'Error',

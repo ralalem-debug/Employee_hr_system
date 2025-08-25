@@ -5,7 +5,7 @@ import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/login_model.dart';
 import '../views/home_screen.dart';
-import '../views/after login/take_selfie.dart';
+import '../views/after login/change_password_screen.dart';
 
 class LoginController extends GetxController {
   var loginAttempts = 0.obs;
@@ -50,7 +50,7 @@ class LoginController extends GetxController {
               decodedToken['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ??
               decodedToken['roles'];
 
-          // Handle role extraction
+          // Extract role
           if (roleData is List) {
             isEmployee = roleData
                 .map((e) => e.toString().toLowerCase())
@@ -93,7 +93,7 @@ class LoginController extends GetxController {
           return false;
         }
 
-        // Save values in local storage
+        // Save token + ids
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('auth_token', token!);
         await prefs.setString('employee_id', employeeId ?? model.userName);
@@ -101,10 +101,15 @@ class LoginController extends GetxController {
           await prefs.setString('user_id', userId!);
         }
 
-        // ✅ Navigation logic
+        // ✅ Navigation flow
         if (isFirstLogin.value) {
-          // First time login → go to Selfie + Signature
-          Get.offAll(() => TakeSelfiePage(token: token!));
+          // First login → must change password
+          Get.offAll(
+            () => ChangePasswordScreen(
+              token: token!,
+              isFirstLogin: isFirstLogin.value,
+            ),
+          );
         } else {
           // Not first login → go directly to Home
           Get.offAll(() => const HomeScreen());

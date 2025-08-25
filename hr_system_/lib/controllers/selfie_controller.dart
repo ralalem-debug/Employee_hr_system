@@ -2,7 +2,6 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import 'package:http_parser/http_parser.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
@@ -31,25 +30,16 @@ class SelfieController extends GetxController {
     errorMessage = null;
 
     try {
-      // اضغط إذا أكبر من 1MB
       File fileToSend = imageFile;
       if (await imageFile.length() > 1024 * 1024) {
         fileToSend = await compressImage(imageFile);
       }
 
-      // ✅ API الجديد
       final uri = Uri.parse("http://192.168.1.213/api/employee/upload-selfie");
       final req = http.MultipartRequest('POST', uri);
 
-      req.files.add(
-        await http.MultipartFile.fromPath(
-          'file',
-          fileToSend.path,
-          contentType: MediaType('image', 'png'), // أو jpg حسب الصورة
-        ),
-      );
+      req.files.add(await http.MultipartFile.fromPath('file', fileToSend.path));
 
-      // ✅ Headers زي الكيرل
       req.headers['accept'] = 'application/json';
       req.headers['Authorization'] = 'Bearer $token';
 
@@ -59,8 +49,12 @@ class SelfieController extends GetxController {
       isLoading.value = false;
 
       if (res.statusCode == 200) {
-        final decoded = jsonDecode(resBody);
-        print("✅ ${decoded['message'] ?? 'Uploaded'}");
+        try {
+          final decoded = jsonDecode(resBody);
+          print("✅ ${decoded['message'] ?? 'Uploaded'}");
+        } catch (_) {
+          print("✅ Selfie uploaded successfully");
+        }
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool('selfie_done', true);
         return true;
