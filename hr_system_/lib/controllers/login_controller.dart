@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/login_model.dart';
+import '../views/home_screen.dart';
+import '../views/after login/take_selfie.dart';
 
 class LoginController extends GetxController {
   var loginAttempts = 0.obs;
@@ -13,9 +15,9 @@ class LoginController extends GetxController {
 
   String? lastErrorMessage;
   String? userRole;
-  String? token; //  إضافة متغير لحفظ التوكن
-  String? employeeId; //  ممكن تحتاجه بشكل متكرر
-  String? userId; //  ممكن تحتاجه بشكل متكرر
+  String? token;
+  String? employeeId;
+  String? userId;
 
   Future<bool> login(LoginModel model) async {
     isLoading.value = true;
@@ -28,13 +30,13 @@ class LoginController extends GetxController {
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(model.toJson()),
       );
-      print('API response: ${res.body}');
 
+      print('API response: ${res.body}');
       isLoading.value = false;
 
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
-        token = data['token']; //  خزّن التوكن
+        token = data['token'];
         isFirstLogin.value = data['isFirstLogin'] ?? false;
 
         String? role;
@@ -43,12 +45,12 @@ class LoginController extends GetxController {
         if (token != null && token!.isNotEmpty) {
           final decodedToken = JwtDecoder.decode(token!);
 
-          // أدوار
           final roleData =
               decodedToken['role'] ??
               decodedToken['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ??
               decodedToken['roles'];
 
+          // Handle role extraction
           if (roleData is List) {
             isEmployee = roleData
                 .map((e) => e.toString().toLowerCase())
@@ -62,6 +64,7 @@ class LoginController extends GetxController {
             role = roleData;
           }
 
+          // Extract employeeId
           employeeId =
               decodedToken['CompanyId'] ??
               decodedToken['employeeCode'] ??
@@ -71,6 +74,7 @@ class LoginController extends GetxController {
               data['userName'] ??
               model.userName;
 
+          // Extract userId
           userId =
               decodedToken['userId'] ??
               decodedToken['nameid'] ??
@@ -84,17 +88,26 @@ class LoginController extends GetxController {
         print('userId: $userId');
 
         if (!isEmployee) {
-          lastErrorMessage = "هذا التطبيق مخصص فقط للموظفين.";
-          Get.snackbar("خطأ", lastErrorMessage!);
+          lastErrorMessage = "This app is only for employees.";
+          Get.snackbar("Error", lastErrorMessage!);
           return false;
         }
 
-        // التخزين في SharedPreferences (احتياطي)
+        // Save values in local storage
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('auth_token', token!);
         await prefs.setString('employee_id', employeeId ?? model.userName);
         if (userId != null && userId!.isNotEmpty) {
           await prefs.setString('user_id', userId!);
+        }
+
+        // ✅ Navigation logic
+        if (isFirstLogin.value) {
+          // First time login → go to Selfie + Signature
+          Get.offAll(() => TakeSelfiePage(token: token!));
+        } else {
+          // Not first login → go directly to Home
+          Get.offAll(() => const HomeScreen());
         }
 
         loginAttempts.value = 0;
@@ -114,7 +127,7 @@ class LoginController extends GetxController {
       } else {
         loginAttempts.value++;
         showError.value = true;
-        lastErrorMessage = "Something went wrong, try again!";
+        lastErrorMessage = "Something went wrong, please try again!";
         Get.snackbar("Error", lastErrorMessage ?? "");
         return false;
       }
