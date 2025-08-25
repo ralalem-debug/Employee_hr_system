@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hr_system_/views/employee_nav_bar.dart';
-import '../../controllers/settings_controller.dart';
+import '../../../controllers/settings_controller.dart';
 
 class SettingsScreen extends StatelessWidget {
   final SettingsController controller = Get.put(SettingsController());
@@ -51,8 +51,12 @@ class SettingsScreen extends StatelessWidget {
             // }),
             const SizedBox(height: 14),
             _sectionTitle("More"),
-            _settingTile("About us", Icons.info_outline, () {}),
-            _settingTile("Privacy policy", Icons.privacy_tip_outlined, () {}),
+            _settingTile("About us", Icons.info_outline, () {
+              Get.toNamed('/aboutus');
+            }),
+            _settingTile("Privacy policy", Icons.privacy_tip_outlined, () {
+              Get.toNamed('/privacypolicy');
+            }),
             const SizedBox(height: 14),
             _sectionTitle("Account"),
             _settingTile("Logout", Icons.logout, () {
