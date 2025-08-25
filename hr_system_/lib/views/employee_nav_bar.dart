@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hr_system_/views/notification_page.dart';
 import 'package:hr_system_/views/profile/profile_screen.dart';
-import 'package:hr_system_/views/settings_page.dart';
+import 'package:hr_system_/views/settings/settings_page.dart';
 import '../controllers/notifications_controller.dart';
 import 'home_screen.dart';
 import 'Dashboard/dashboard_screen.dart';
