@@ -237,7 +237,7 @@ class _LeaveRequestViewState extends State<PartialLeaveRequestView> {
                       controller: TextEditingController(
                         text: fromTime == null ? '' : _formatTime(fromTime!),
                       ),
-                      hint: "0830",
+                      hint: "08:30",
                       readOnly: true,
                       onTap: () async {
                         await pickTime(context, true);
