@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'login_screen.dart';
-import 'home_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -32,18 +30,9 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller.forward();
 
-    // بعد 3 ثواني، قرر وين يروح
-    Future.delayed(const Duration(seconds: 3), () async {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token');
-
-      if (token != null && token.isNotEmpty) {
-        // المستخدم مسجّل قبل → مباشرة على Home
-        Get.offAll(() => const HomeScreen());
-      } else {
-        // ما في تسجيل دخول → روح على Login
-        Get.offAll(() => const LoginScreen());
-      }
+    // بعد 3 ثواني → دايمًا روح على صفحة تسجيل الدخول
+    Future.delayed(const Duration(seconds: 3), () {
+      Get.offAll(() => const LoginScreen());
     });
   }
 
