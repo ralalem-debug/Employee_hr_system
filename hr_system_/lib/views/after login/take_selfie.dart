@@ -35,7 +35,7 @@ class _TakeSelfiePageState extends State<TakeSelfiePage> {
     bool success = await controller.uploadSelfie(_selfie!, widget.token);
 
     if (success) {
-      // ✅ بعد السيلفي → على صفحة التوقيع
+      // ✅ بعد السيلفي يروح على صفحة التوقيع
       Get.offAll(() => const SignatureScreen());
     } else {
       Get.snackbar("Error", controller.errorMessage ?? "Failed to upload");
@@ -58,16 +58,82 @@ class _TakeSelfiePageState extends State<TakeSelfiePage> {
       body: SafeArea(
         child: Obx(
           () => SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 18.0,
+              vertical: 12.0,
+            ),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: 24),
-                const Text(
-                  'Welcome, Employee 👋',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Welcome, Employee 👋',
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 8),
 
+                // Warning message
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  margin: const EdgeInsets.symmetric(vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.yellow.shade700),
+                  ),
+                  child: Row(
+                    children: const [
+                      Icon(
+                        Icons.warning_amber_rounded,
+                        color: Colors.amber,
+                        size: 26,
+                      ),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Please complete your profile to access the system.',
+                          style: TextStyle(fontSize: 15, color: Colors.black87),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 18),
+
+                // Clear selfie instructions
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 10,
+                    horizontal: 8,
+                  ),
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Text(
+                    'Please take a clear selfie:\n\n'
+                    '1. Make sure your full face is visible.\n'
+                    '2. Look directly at the camera.\n'
+                    '3. No glasses or hats.',
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: Colors.blueAccent,
+                      height: 1.6,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+
+                const SizedBox(height: 14),
+
+                // Selfie button
                 InkWell(
                   onTap: controller.isLoading.value ? null : _pickImage,
                   borderRadius: BorderRadius.circular(100),
@@ -78,16 +144,41 @@ class _TakeSelfiePageState extends State<TakeSelfiePage> {
                       shape: BoxShape.circle,
                       color: Colors.white,
                       border: Border.all(color: Colors.blueAccent, width: 4),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.blue[700]!,
+                          blurRadius: 14,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
                     child:
                         _selfie != null
                             ? ClipOval(
-                              child: Image.file(_selfie!, fit: BoxFit.cover),
+                              child: Image.file(
+                                _selfie!,
+                                width: 170,
+                                height: 170,
+                                fit: BoxFit.cover,
+                              ),
                             )
-                            : const Icon(
-                              Icons.camera_alt,
-                              size: 50,
-                              color: Colors.blueAccent,
+                            : Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: const [
+                                Icon(
+                                  Icons.camera_alt_rounded,
+                                  size: 52,
+                                  color: Colors.blueAccent,
+                                ),
+                                SizedBox(height: 16),
+                                Text(
+                                  'Take Selfie',
+                                  style: TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
                             ),
                   ),
                 ),
@@ -97,9 +188,18 @@ class _TakeSelfiePageState extends State<TakeSelfiePage> {
                 controller.isLoading.value
                     ? const CircularProgressIndicator()
                     : ElevatedButton(
-                      onPressed: _submit,
+                      onPressed: controller.isLoading.value ? null : _submit,
                       child: const Text("Continue"),
                     ),
+
+                const SizedBox(height: 28),
+                const Text(
+                  'Your photo will not be shared with any external parties.',
+                  style: TextStyle(color: Colors.grey, fontSize: 13),
+                  textAlign: TextAlign.center,
+                ),
+
+                const SizedBox(height: 24),
               ],
             ),
           ),
