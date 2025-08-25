@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hr_system_/views/forgetpass/password_success_screen.dart';
 import '../../controllers/reset_password_controller.dart';
+<<<<<<< HEAD
+=======
+import 'password_success_screen.dart';
+>>>>>>> cbe1a8470a5ae23a97f8b3540d3023ed4a3b52d7
 
 class ResetPasswordScreen extends StatelessWidget {
   final String token;
