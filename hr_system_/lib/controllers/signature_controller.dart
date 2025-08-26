@@ -1,19 +1,21 @@
 import 'dart:io';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class SignatureUploadController extends GetxController {
   var isLoading = false.obs;
   String? errorMessage;
+
+  // ✅ Secure storage
+  final storage = const FlutterSecureStorage();
 
   Future<bool> uploadSignature(File signatureFile, String employeeId) async {
     isLoading.value = true;
     errorMessage = null;
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      String? token = prefs.getString('auth_token');
+      final token = await storage.read(key: 'auth_token');
 
       final uri = Uri.parse(
         "http://192.168.1.131:5005/api/employee/upload-signature",
@@ -27,7 +29,7 @@ class SignatureUploadController extends GetxController {
       // فقط إذا الـ API فعلاً بطلب employeeId كـ field
       req.fields['employeeId'] = employeeId;
 
-      if (token != null) {
+      if (token != null && token.isNotEmpty) {
         req.headers['Authorization'] = 'Bearer $token';
       }
 
@@ -38,7 +40,8 @@ class SignatureUploadController extends GetxController {
 
       if (res.statusCode == 200) {
         print("✅ Signature uploaded");
-        await prefs.setBool('signature_done', true);
+        // ✅ Store flag in secure storage
+        await storage.write(key: 'signature_done', value: 'true');
         return true;
       } else {
         errorMessage =

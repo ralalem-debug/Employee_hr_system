@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hr_system_/models/Dashboard/resignation_model.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class ResignationRequestController extends GetxController {
   final noteController = TextEditingController();
@@ -16,6 +16,9 @@ class ResignationRequestController extends GetxController {
 
   static const String apiUrl =
       'http://192.168.1.131:5005/api/resignations/send-resignation';
+
+  // ✅ Secure storage
+  final storage = const FlutterSecureStorage();
 
   Future<void> sendResignation() async {
     final note = noteController.text.trim();
@@ -29,8 +32,7 @@ class ResignationRequestController extends GetxController {
     isLoading.value = true;
     error.value = null;
 
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token') ?? '';
+    final token = await storage.read(key: 'auth_token') ?? '';
 
     final resignation = ResignationRequestModel(
       note: note,

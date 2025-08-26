@@ -1,11 +1,14 @@
 import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class ChangePasswordController extends GetxController {
   var isLoading = false.obs;
   String? errorMessage;
+
+  // ✅ Secure storage instance
+  final storage = const FlutterSecureStorage();
 
   Future<bool> changePassword(
     String newPassword,
@@ -15,8 +18,7 @@ class ChangePasswordController extends GetxController {
     errorMessage = null;
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token');
+      final token = await storage.read(key: 'auth_token');
 
       if (token == null || token.isEmpty) {
         errorMessage = "Missing authentication token!";

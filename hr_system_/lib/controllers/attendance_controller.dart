@@ -1,15 +1,17 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/attendance_model.dart';
 
 class AttendanceController {
   final String baseUrl = 'http://192.168.1.131:5005/api/attendance';
 
-  ///(CheckIn, CheckOut, TotalHours)
+  // ✅ Secure storage instance
+  final storage = const FlutterSecureStorage();
+
+  /// (CheckIn, CheckOut, TotalHours)
   Future<AttendanceModel?> fetchCheckInOutTime() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token');
+    final token = await storage.read(key: 'auth_token');
     if (token == null || token.isEmpty) return null;
 
     final url = '$baseUrl/checkInOut-time';
@@ -27,8 +29,7 @@ class AttendanceController {
 
   /// ✅ تسجيل الحضور
   Future<DateTime?> doCheckIn() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token');
+    final token = await storage.read(key: 'auth_token');
     if (token == null || token.isEmpty) return null;
 
     final url = '$baseUrl/checkin';
@@ -60,8 +61,7 @@ class AttendanceController {
 
   /// ✅ تسجيل الانصراف
   Future<DateTime?> doCheckOut() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token');
+    final token = await storage.read(key: 'auth_token');
     if (token == null || token.isEmpty) return null;
 
     final url = '$baseUrl/checkInOut-time';
@@ -93,9 +93,8 @@ class AttendanceController {
 
   /// ✅ التأكد من أن الموظف مسجّل في النظام (حسب ID)
   Future<bool> checkAtOffice() async {
-    final prefs = await SharedPreferences.getInstance();
-    final employeeId = prefs.getString('employee_id');
-    final userId = prefs.getString('user_id');
+    final employeeId = await storage.read(key: 'employee_id');
+    final userId = await storage.read(key: 'user_id');
     final idToUse =
         (employeeId != null && employeeId.isNotEmpty) ? employeeId : userId;
 

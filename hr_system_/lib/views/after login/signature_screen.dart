@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:signature/signature.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../controllers/signature_controller.dart';
 import '../home_screen.dart';
 
@@ -23,6 +24,9 @@ class _SignatureScreenState extends State<SignatureScreen> {
     SignatureUploadController(),
   );
 
+  // ✅ Secure storage
+  final storage = const FlutterSecureStorage();
+
   Future<File> _bytesToFile(Uint8List data) async {
     final dir = await getTemporaryDirectory();
     final file = File('${dir.path}/signature.png');
@@ -40,7 +44,14 @@ class _SignatureScreenState extends State<SignatureScreen> {
     if (data == null) return;
     final file = await _bytesToFile(data);
 
-    bool success = await _controller.uploadSignature(file, "employee");
+    // ✅ اجلب employeeId من التخزين الآمن
+    final employeeId = await storage.read(key: 'employee_id') ?? '';
+    if (employeeId.isEmpty) {
+      Get.snackbar("Error", "Missing employee ID. Please login again.");
+      return;
+    }
+
+    bool success = await _controller.uploadSignature(file, employeeId);
     if (success) {
       Get.offAll(() => const HomeScreen());
     } else {

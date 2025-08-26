@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../controllers/Dashboard/leave_request_controller.dart';
 import '../employee_nav_bar.dart';
 
@@ -22,6 +22,8 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
   bool loading = false;
   bool submitted = false;
   String? errorMsg;
+
+  final storage = const FlutterSecureStorage();
 
   Future<void> _pickFile() async {
     final result = await FilePicker.platform.pickFiles();
@@ -58,9 +60,8 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
       submitted = false;
     });
 
-    // جلب التوكن من الشيرد برفرنس
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token');
+    // ✅ جلب التوكن من FlutterSecureStorage
+    final token = await storage.read(key: 'auth_token');
     if (token == null) {
       setState(() {
         loading = false;
@@ -97,7 +98,6 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
             ListView(
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
               children: [
-                // شعار HR هنا إذا عندك صورة
                 const SizedBox(height: 50),
                 Center(
                   child: Text(
@@ -304,7 +304,7 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> {
                       ),
                       const SizedBox(height: 4),
                       const Text(
-                        "and is awaiting admin app roval",
+                        "and is awaiting admin approval",
                         style: TextStyle(fontSize: 10, color: Colors.black87),
                       ),
                     ],

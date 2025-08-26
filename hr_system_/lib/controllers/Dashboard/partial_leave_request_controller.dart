@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:hr_system_/models/Dashboard/partial_leave_request.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class LeaveRequestController {
   final TextEditingController startTimeController = TextEditingController();
@@ -13,6 +13,9 @@ class LeaveRequestController {
   TimeOfDay? fromTime;
   TimeOfDay? toTime;
   DateTime? selectedDate;
+
+  // ✅ Secure storage
+  final storage = const FlutterSecureStorage();
 
   LeaveRequestController() {
     final now = DateTime.now();
@@ -87,9 +90,9 @@ class LeaveRequestController {
       reason: reasonController.text.trim(),
     );
 
-    final prefs = await SharedPreferences.getInstance();
-    final jwtToken = prefs.getString('auth_token');
-    if (jwtToken == null) {
+    // ✅ قراءة التوكن من SecureStorage
+    final jwtToken = await storage.read(key: 'auth_token');
+    if (jwtToken == null || jwtToken.isEmpty) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('الرجاء إعادة تسجيل الدخول')));

@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 import 'package:hr_system_/models/Dashboard/breaks_model.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
@@ -10,6 +10,9 @@ class BreakController extends GetxController {
   var error = "".obs;
   String? currentBreakReportId;
 
+  // ✅ Secure storage
+  final storage = const FlutterSecureStorage();
+
   @override
   void onInit() {
     fetchBreaks();
@@ -17,8 +20,7 @@ class BreakController extends GetxController {
   }
 
   Future<String?> _getToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('auth_token');
+    return await storage.read(key: 'auth_token');
   }
 
   Future<void> fetchBreaks() async {

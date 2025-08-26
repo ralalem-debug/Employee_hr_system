@@ -5,11 +5,14 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class SelfieController extends GetxController {
   var isLoading = false.obs;
   String? errorMessage;
+
+  // ✅ Secure storage
+  final storage = const FlutterSecureStorage();
 
   Future<File> compressImage(File file) async {
     final dir = await getTemporaryDirectory();
@@ -57,8 +60,10 @@ class SelfieController extends GetxController {
         } catch (_) {
           print("✅ Selfie uploaded successfully");
         }
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setBool('selfie_done', true);
+
+        // ✅ Store flag in secure storage
+        await storage.write(key: 'selfie_done', value: 'true');
+
         return true;
       } else {
         errorMessage = "Failed to upload selfie. (${res.statusCode})\n$resBody";

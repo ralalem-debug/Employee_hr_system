@@ -1,16 +1,18 @@
 import 'dart:convert';
 import 'package:hr_system_/models/Dashboard/leave_request_list_model.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class LeaveListController {
+  // ✅ Secure storage
+  final storage = const FlutterSecureStorage();
+
   Future<List<LeaveRequestModel>> fetchLeaveRequests({
     String? sortBy,
     String? order,
   }) async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token');
-    if (token == null) throw Exception('No token found!');
+    final token = await storage.read(key: 'auth_token');
+    if (token == null || token.isEmpty) throw Exception('No token found!');
 
     final queryParams = <String, String>{};
     if (sortBy != null) queryParams['sortBy'] = sortBy;

@@ -16,6 +16,7 @@ import 'package:hr_system_/views/Dashboard/resignation_request_screen.dart'
 import 'package:hr_system_/views/Dashboard/salary_advance_list_screen.dart';
 import 'package:http/http.dart' as http;
 import 'package:percent_indicator/percent_indicator.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../employee_nav_bar.dart';
@@ -43,6 +44,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   int leaves = 0;
   int lateness = 0;
 
+  final FlutterSecureStorage secureStorage = const FlutterSecureStorage();
+
   @override
   void initState() {
     super.initState();
@@ -52,12 +55,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Future<void> _fetchPerformance() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      // 🔹 نفس المفاتيح اللي تخزنها في LoginController
       final token =
-          prefs.getString('auth_token') ?? prefs.getString('token') ?? '';
+          await secureStorage.read(key: 'auth_token') ??
+          await secureStorage.read(key: 'token') ??
+          '';
       final rawEmployeeId =
-          prefs.getString('employee_id') ?? prefs.getString('employeeId') ?? '';
+          await secureStorage.read(key: 'employee_id') ??
+          await secureStorage.read(key: 'employeeId') ??
+          '';
 
       if (token.isEmpty || rawEmployeeId.isEmpty) {
         setState(() => isLoadingPerformance = false);
@@ -118,8 +123,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> _loadCalendarEvents() async {
     setState(() => isLoadingEvents = true);
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final jwtToken = prefs.getString('auth_token');
+      final jwtToken = await secureStorage.read(key: 'auth_token');
       if (jwtToken == null) {
         setState(() => isLoadingEvents = false);
         if (!mounted) return;
@@ -554,58 +558,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ),
                 ),
 
-                // const SizedBox(height: 16),
-
-                // // كروت القيم التفصيلية
-                // if (!isLoadingPerformance)
-                //   Row(
-                //     children: [
-                //       Expanded(
-                //         child: _metricCard(
-                //           title: "Projects",
-                //           value: projects,
-                //           borderColor: Colors.blue.shade300,
-                //           icon: Icons.work_outline,
-                //           iconColor: Colors.blue.shade600,
-                //         ),
-                //       ),
-                //       const SizedBox(width: 12),
-                //       Expanded(
-                //         child: _metricCard(
-                //           title: "Attendance",
-                //           value: attendance,
-                //           borderColor: Colors.green.shade300,
-                //           icon: Icons.how_to_reg_outlined,
-                //           iconColor: Colors.green.shade700,
-                //         ),
-                //       ),
-                //     ],
-                //   ),
-                // if (!isLoadingPerformance) const SizedBox(height: 12),
-                // if (!isLoadingPerformance)
-                //   Row(
-                //     children: [
-                //       Expanded(
-                //         child: _metricCard(
-                //           title: "Leaves",
-                //           value: leaves,
-                //           borderColor: Colors.orange.shade300,
-                //           icon: Icons.event_busy_outlined,
-                //           iconColor: Colors.orange.shade700,
-                //         ),
-                //       ),
-                //       const SizedBox(width: 12),
-                //       Expanded(
-                //         child: _metricCard(
-                //           title: "Lateness",
-                //           value: lateness,
-                //           borderColor: Colors.red.shade300,
-                //           icon: Icons.access_time,
-                //           iconColor: Colors.red.shade600,
-                //         ),
-                //       ),
-                //     ],
-                //   ),
                 const SizedBox(height: 22),
 
                 // شبكة الميزات
@@ -712,74 +664,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
     );
   }
-
-  // Widget _metricCard({
-  //   required String title,
-  //   required int value,
-  //   required Color borderColor,
-  //   required IconData icon,
-  //   required Color iconColor,
-  // }) {
-  //   return Container(
-  //     padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
-  //     decoration: BoxDecoration(
-  //       color: Colors.white,
-  //       borderRadius: BorderRadius.circular(16),
-  //       border: Border.all(color: borderColor.withOpacity(0.35), width: 1),
-  //       boxShadow: [
-  //         BoxShadow(
-  //           color: borderColor.withOpacity(0.10),
-  //           blurRadius: 12,
-  //           offset: const Offset(0, 4),
-  //         ),
-  //       ],
-  //     ),
-  //     child: Row(
-  //       children: [
-  //         Container(
-  //           decoration: BoxDecoration(
-  //             shape: BoxShape.circle,
-  //             gradient: LinearGradient(
-  //               colors: [
-  //                 iconColor.withOpacity(0.14),
-  //                 iconColor.withOpacity(0.07),
-  //               ],
-  //               begin: Alignment.topLeft,
-  //               end: Alignment.bottomRight,
-  //             ),
-  //           ),
-  //           padding: const EdgeInsets.all(10),
-  //           child: Icon(icon, color: iconColor, size: 24),
-  //         ),
-  //         const SizedBox(width: 12),
-  //         Expanded(
-  //           child: Column(
-  //             crossAxisAlignment: CrossAxisAlignment.start,
-  //             children: [
-  //               Text(
-  //                 title,
-  //                 style: TextStyle(
-  //                   color: Colors.blueGrey.shade700,
-  //                   fontSize: 13.5,
-  //                   fontWeight: FontWeight.w600,
-  //                 ),
-  //               ),
-  //               const SizedBox(height: 4),
-  //               Text(
-  //                 "$value",
-  //                 style: TextStyle(
-  //                   color: Colors.blueGrey.shade900,
-  //                   fontSize: 18,
-  //                   fontWeight: FontWeight.bold,
-  //                 ),
-  //               ),
-  //             ],
-  //           ),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
 
   Widget _featureButton(
     IconData icon,

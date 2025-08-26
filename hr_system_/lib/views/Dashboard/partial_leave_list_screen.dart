@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:hr_system_/controllers/Dashboard/partial_leave_list_controller.dart';
 import 'package:hr_system_/models/Dashboard/partial_leave_list.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../employee_nav_bar.dart';
 
 class PartialLeaveListScreen extends StatefulWidget {
@@ -26,6 +26,9 @@ class _LeavesListViewState extends State<PartialLeaveListScreen> {
     'requestStatus-asc': 'Status ↑',
     'requestStatus-desc': 'Status ↓',
   };
+
+  // FlutterSecureStorage
+  final storage = const FlutterSecureStorage();
 
   // Ticker لتحديث العدادات كل ثانية
   Timer? _ticker;
@@ -64,10 +67,10 @@ class _LeavesListViewState extends State<PartialLeaveListScreen> {
 
   DateTime? _parseStartDateTime(PartialDayLeaveModel leave) {
     try {
-      if (leave.leaveStartTime == null || leave.leaveStartTime!.isEmpty)
+      if (leave.leaveStartTime == null || leave.leaveStartTime!.isEmpty) {
         return null;
+      }
 
-      // leaveDate: "YYYY-MM-DD", leaveStartTime: "HH:mm" أو "HH:mm:ss"
       final date = leave.leaveDate.trim();
       final time = leave.leaveStartTime!.trim();
 
@@ -89,8 +92,7 @@ class _LeavesListViewState extends State<PartialLeaveListScreen> {
 
   // ================ Data =====================
   Future<void> _loadTokenAndLeaves() async {
-    final prefs = await SharedPreferences.getInstance();
-    jwtToken = prefs.getString('auth_token');
+    jwtToken = await storage.read(key: 'auth_token');
     _refreshLeaves();
   }
 
@@ -117,7 +119,7 @@ class _LeavesListViewState extends State<PartialLeaveListScreen> {
       builder: (ctx) {
         String tempSelection = selectedSort;
         return AlertDialog(
-          backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+          backgroundColor: Colors.white,
           title: const Text("Sort Options"),
           content: DropdownButtonFormField<String>(
             value: tempSelection,

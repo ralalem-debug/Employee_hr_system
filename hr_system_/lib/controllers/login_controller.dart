@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:hr_system_/views/login_screen.dart';
 import 'package:http/http.dart' as http;
 import 'package:jwt_decoder/jwt_decoder.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/login_model.dart';
 import '../views/after login/change_password_screen.dart';
 
@@ -18,6 +18,9 @@ class LoginController extends GetxController {
   String? token;
   String? employeeId;
   String? userId;
+
+  // ✅ Secure storage instance
+  final storage = const FlutterSecureStorage();
 
   Future<bool> login(LoginModel model) async {
     isLoading.value = true;
@@ -93,12 +96,14 @@ class LoginController extends GetxController {
           return false;
         }
 
-        // Save token + ids
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('auth_token', token!);
-        await prefs.setString('employee_id', employeeId ?? model.userName);
+        // ✅ Save token + ids securely
+        await storage.write(key: 'auth_token', value: token!);
+        await storage.write(
+          key: 'employee_id',
+          value: employeeId ?? model.userName,
+        );
         if (userId != null && userId!.isNotEmpty) {
-          await prefs.setString('user_id', userId!);
+          await storage.write(key: 'user_id', value: userId!);
         }
 
         // ✅ Navigation flow

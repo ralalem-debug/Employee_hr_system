@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import '../../models/Dashboard/complaint_model.dart';
 
@@ -16,6 +16,9 @@ class ComplaintController extends GetxController {
   static const String apiUrl =
       'http://192.168.1.131:5005/api/complaints/send-complaint';
 
+  // ✅ Secure storage
+  final storage = const FlutterSecureStorage();
+
   Future<void> sendComplaint() async {
     final subject = subjectController.text.trim();
     final details = detailsController.text.trim();
@@ -28,8 +31,7 @@ class ComplaintController extends GetxController {
     isLoading.value = true;
     error.value = null;
 
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token') ?? '';
+    final token = await storage.read(key: 'auth_token') ?? '';
 
     final complaint = ComplaintModel(subject: subject, details: details);
 

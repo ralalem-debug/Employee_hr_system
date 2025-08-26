@@ -5,7 +5,7 @@ import 'package:hr_system_/models/profile%20page/Documents_info_model.dart';
 import 'package:hr_system_/models/profile%20page/personal_info_model.dart';
 import 'package:hr_system_/models/profile%20page/professional_info_model.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:dio/dio.dart' as dio;
 import 'package:open_filex/open_filex.dart';
 
@@ -19,10 +19,12 @@ class ProfileController extends GetxController {
 
   final String baseUrl = "http://192.168.1.131:5005";
 
+  // ✅ Secure storage
+  final storage = const FlutterSecureStorage();
+
   Future<Map<String, String>> _getAuthData() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token') ?? '';
-    final employeeId = prefs.getString('employee_id') ?? '';
+    final token = await storage.read(key: 'auth_token') ?? '';
+    final employeeId = await storage.read(key: 'employee_id') ?? '';
     return {"token": token, "employeeId": employeeId};
   }
 

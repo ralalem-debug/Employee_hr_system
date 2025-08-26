@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hr_system_/models/Dashboard/list_note_model.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class NotesListController extends GetxController {
   var notes = <ListNoteModel>[].obs;
@@ -14,12 +14,14 @@ class NotesListController extends GetxController {
       'http://192.168.1.131:5005/api/notes/Employee-notes';
   static const String deleteUrl = 'http://192.168.1.131:5005/api/notes/delete/';
 
+  // ✅ Secure storage
+  final storage = const FlutterSecureStorage();
+
   // Fetch notes from API
   Future<void> fetchNotes() async {
     isLoading.value = true;
     error.value = null;
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token') ?? '';
+    final token = await storage.read(key: 'auth_token') ?? '';
 
     try {
       final response = await http.get(
@@ -44,8 +46,7 @@ class NotesListController extends GetxController {
 
   // Delete note from API
   Future<void> deleteNote(String noteId) async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token') ?? '';
+    final token = await storage.read(key: 'auth_token') ?? '';
 
     try {
       final response = await http.delete(

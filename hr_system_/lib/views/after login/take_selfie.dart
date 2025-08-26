@@ -2,13 +2,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../controllers/selfie_controller.dart';
 import 'signature_screen.dart';
 
 class TakeSelfiePage extends StatefulWidget {
-  final String token;
-
-  const TakeSelfiePage({Key? key, required this.token}) : super(key: key);
+  const TakeSelfiePage({Key? key}) : super(key: key);
 
   @override
   State<TakeSelfiePage> createState() => _TakeSelfiePageState();
@@ -17,6 +16,9 @@ class TakeSelfiePage extends StatefulWidget {
 class _TakeSelfiePageState extends State<TakeSelfiePage> {
   File? _selfie;
   final controller = Get.put(SelfieController());
+
+  // ✅ Secure storage
+  final storage = const FlutterSecureStorage();
 
   Future<void> _pickImage() async {
     final picked = await ImagePicker().pickImage(
@@ -32,7 +34,14 @@ class _TakeSelfiePageState extends State<TakeSelfiePage> {
       return;
     }
 
-    bool success = await controller.uploadSelfie(_selfie!, widget.token);
+    // ✅ جلب التوكن من التخزين
+    final token = await storage.read(key: 'auth_token') ?? '';
+    if (token.isEmpty) {
+      Get.snackbar("Error", "Missing token. Please login again.");
+      return;
+    }
+
+    bool success = await controller.uploadSelfie(_selfie!, token);
 
     if (success) {
       Get.offAll(() => const SignatureScreen());

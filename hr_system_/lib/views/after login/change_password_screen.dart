@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hr_system_/views/after login/take_selfie.dart';
 import 'package:hr_system_/views/home_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../controllers/change_password_controller.dart';
 
 class ChangePasswordScreen extends StatelessWidget {
   final String token;
-  final bool isFirstLogin; // ⬅️ نستقبلها من LoginController
+  final bool isFirstLogin;
 
   final _newPassController = TextEditingController();
   final _confirmPassController = TextEditingController();
@@ -21,6 +21,9 @@ class ChangePasswordScreen extends StatelessWidget {
   final ChangePasswordController controller = Get.put(
     ChangePasswordController(),
   );
+
+  // ✅ Secure storage
+  final storage = const FlutterSecureStorage();
 
   Future<void> _handleChange() async {
     if (_newPassController.text.trim().isEmpty ||
@@ -39,19 +42,18 @@ class ChangePasswordScreen extends StatelessWidget {
     );
 
     if (success) {
-      final prefs = await SharedPreferences.getInstance();
-
       // Only reset if it is really first login
       if (isFirstLogin) {
-        await prefs.setBool('selfie_done', false);
-        await prefs.setBool('signature_done', false);
-        Get.offAll(() => TakeSelfiePage(token: token));
+        await storage.write(key: 'selfie_done', value: 'false');
+        await storage.write(key: 'signature_done', value: 'false');
+        Get.offAll(() => const TakeSelfiePage());
       } else {
         // Not first login → go directly to home
         Get.offAll(() => const HomeScreen());
       }
 
-      await prefs.setString('token', token);
+      // ✅ Save token securely
+      await storage.write(key: 'auth_token', value: token);
     } else {
       Get.snackbar(
         'Error',

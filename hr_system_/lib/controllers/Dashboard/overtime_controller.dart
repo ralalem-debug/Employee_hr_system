@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../models/Dashboard/overtime_model.dart';
 
 class OvertimeController extends GetxController {
@@ -20,6 +20,9 @@ class OvertimeController extends GetxController {
 
   static const String apiUrl =
       'http://192.168.1.131:5005/api/overtime/employee/send-request';
+
+  // ✅ Secure storage
+  final storage = const FlutterSecureStorage();
 
   Future<void> sendOvertime() async {
     final date = dateController.text.trim();
@@ -41,8 +44,7 @@ class OvertimeController extends GetxController {
     isLoading.value = true;
     error.value = null;
 
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token') ?? '';
+    final token = await storage.read(key: 'auth_token') ?? '';
 
     final overtime = OvertimeModel(
       date: date,

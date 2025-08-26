@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../employee_nav_bar.dart';
 
 class PartialLeaveRequestView extends StatefulWidget {
@@ -19,6 +19,9 @@ class _LeaveRequestViewState extends State<PartialLeaveRequestView> {
   TimeOfDay? fromTime;
   TimeOfDay? toTime;
   DateTime? selectedDate;
+
+  // 🔹 FlutterSecureStorage
+  final storage = const FlutterSecureStorage();
 
   @override
   void initState() {
@@ -76,36 +79,34 @@ class _LeaveRequestViewState extends State<PartialLeaveRequestView> {
   }
 
   int timeOfDayToTicks(TimeOfDay t) {
-    // ticks = milliseconds * 10000
-    // ticks since 00:00 (midnight)
     return ((t.hour * 60 + t.minute) * 60 * 10000000);
   }
 
   Future<void> submit(BuildContext context) async {
     if (fromTime == null || toTime == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please select start and end time')),
+        const SnackBar(content: Text('Please select start and end time')),
       );
       return;
     }
     if (reasonController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please enter the reason for leave')),
+        const SnackBar(content: Text('Please enter the reason for leave')),
       );
       return;
     }
     if (selectedDate == null) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Please select leave date')));
+      ).showSnackBar(const SnackBar(content: Text('Please select leave date')));
       return;
     }
 
-    final prefs = await SharedPreferences.getInstance();
-    final jwtToken = prefs.getString('auth_token');
+    // 🔹 جلب التوكن من Secure Storage
+    final jwtToken = await storage.read(key: 'auth_token');
     if (jwtToken == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Session expired. Please login again.')),
+        const SnackBar(content: Text('Session expired. Please login again.')),
       );
       return;
     }
@@ -114,7 +115,6 @@ class _LeaveRequestViewState extends State<PartialLeaveRequestView> {
       "date": selectedDate!.toIso8601String(),
       "fromTime": "${_formatTime(fromTime!)}:00",
       "toTime": "${_formatTime(toTime!)}:00",
-
       "reason": reasonController.text.trim(),
     };
 
@@ -131,7 +131,7 @@ class _LeaveRequestViewState extends State<PartialLeaveRequestView> {
       );
       if (res.statusCode == 200 || res.statusCode == 201) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Request submitted successfully')),
+          const SnackBar(content: Text('Request submitted successfully')),
         );
         Navigator.pop(context);
       } else {
@@ -169,7 +169,6 @@ class _LeaveRequestViewState extends State<PartialLeaveRequestView> {
           child: Column(
             children: [
               const SizedBox(height: 18),
-              // Header Date
               Text(
                 dateString,
                 style: TextStyle(
