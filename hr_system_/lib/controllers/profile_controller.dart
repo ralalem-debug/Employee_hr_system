@@ -104,6 +104,9 @@ class ProfileController extends GetxController {
       } else {
         throw Exception("Error loading documents: ${docsResponse.body}");
       }
+
+      // ✅ جلب صورة المستخدم مع البروفايل
+      await fetchUserImage();
     } catch (e) {
       error.value = e.toString();
       print("❌ fetchProfile error: $e");
@@ -267,6 +270,7 @@ class ProfileController extends GetxController {
     }
   }
 
+  // ✅ رفع صورة المستخدم
   Future<bool> uploadProfileImage(File file) async {
     try {
       final auth = await _getAuthData();
@@ -291,17 +295,7 @@ class ProfileController extends GetxController {
       );
 
       if (response.statusCode == 200) {
-        final newImageUrl = response.data["imageUrl"];
-
-        if (personalInfo.value != null) {
-          // ✅ حدث الـ model مع الرابط الجديد
-          personalInfo.value = personalInfo.value!.copyWith(
-            imageUrl: newImageUrl,
-          );
-          // ✅ أجبر Obx يعمل rebuild
-          personalInfo.refresh();
-        }
-
+        await fetchUserImage(); // ✅ بعد الرفع نجيب الصورة الجديدة
         return true;
       } else {
         Get.snackbar("Error", "Failed to upload image");
@@ -319,15 +313,29 @@ class ProfileController extends GetxController {
       final token = auth["token"]!;
 
       final response = await dio.Dio().get(
-        "$baseUrl/api/Auth/user-image",
-        options: dio.Options(headers: {"Authorization": "Bearer $token"}),
+        "$baseUrl/api/Auth/user-image", // ✅ جرب بدون employeeId
+        options: dio.Options(
+          headers: {
+            "Authorization": "Bearer $token",
+            "Accept": "application/json",
+          },
+        ),
       );
 
-      if (response.statusCode == 200) {
-        final imageUrl = response.data["imageUrl"];
+      print("📷 Full User Image Response: ${response.data}");
 
-        if (personalInfo.value != null) {
-          personalInfo.value = personalInfo.value!.copyWith(imageUrl: imageUrl);
+      if (response.statusCode == 200) {
+        // جرب كل المفاتيح المحتملة
+        final imageUrl =
+            response.data["imageUrl"] ??
+            response.data["imagePath"] ??
+            response.data["data"]?["imageUrl"];
+
+        if (imageUrl != null && personalInfo.value != null) {
+          personalInfo.value = personalInfo.value!.copyWith(
+            imageUrl:
+                imageUrl.startsWith("http") ? imageUrl : "$baseUrl$imageUrl",
+          );
           personalInfo.refresh();
         }
       }

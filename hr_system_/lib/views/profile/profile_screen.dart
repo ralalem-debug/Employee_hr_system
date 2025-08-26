@@ -25,7 +25,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await controller.fetchProfile();
-      await controller.fetchUserImage();
     });
   }
 
@@ -113,18 +112,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                             ),
                             child: CircleAvatar(
-                              radius: 52,
-                              backgroundColor: Colors.white,
-                              child: CircleAvatar(
-                                radius: 48,
-                                backgroundColor: Colors.blue.shade50,
-                                backgroundImage: NetworkImage(
+                              radius: 48,
+                              backgroundColor: Colors.blue.shade50,
+                              backgroundImage:
                                   (personal.imageUrl != null &&
                                           personal.imageUrl!.isNotEmpty)
-                                      ? "$baseUrl${personal.imageUrl}?v=${DateTime.now().millisecondsSinceEpoch}"
-                                      : "https://ui-avatars.com/api/?name=${personal.fullNameEng.replaceAll(' ', '+')}&background=2563eb&color=fff&rounded=true&size=128",
-                                ),
-                              ),
+                                      ? NetworkImage(
+                                        personal.imageUrl!.startsWith("http")
+                                            ? personal.imageUrl!
+                                            : "$baseUrl${personal.imageUrl}", // ✅ ركب baseUrl إذا ناقص
+                                      )
+                                      : null,
+                              child:
+                                  (personal.imageUrl == null ||
+                                          personal.imageUrl!.isEmpty)
+                                      ? Text(
+                                        personal.fullNameEng.isNotEmpty
+                                            ? personal.fullNameEng
+                                                .substring(0, 2)
+                                                .toUpperCase()
+                                            : "", // ✅ fallback فاضي إذا الاسم مش موجود
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 20,
+                                        ),
+                                      )
+                                      : null,
                             ),
                           ),
 
@@ -135,12 +148,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             child: GestureDetector(
                               onTap: () async {
                                 final ImagePicker picker = ImagePicker();
-
-                                // ✅ يخير المستخدم بين الكاميرا والمعرض
                                 final XFile? picked = await picker.pickImage(
-                                  source:
-                                      ImageSource
-                                          .gallery, // أو ImageSource.camera
+                                  source: ImageSource.gallery,
                                   maxHeight: 800,
                                   maxWidth: 800,
                                   imageQuality: 85,
@@ -151,6 +160,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   final ok = await controller
                                       .uploadProfileImage(file);
                                   if (ok) {
+                                    // ✅ بعد الرفع مباشرة أعمل fetchProfile
+                                    await controller.fetchProfile();
+
                                     Get.snackbar(
                                       "Success",
                                       "Profile image updated",
@@ -158,6 +170,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   }
                                 }
                               },
+
                               child: Container(
                                 padding: EdgeInsets.all(6),
                                 decoration: BoxDecoration(
