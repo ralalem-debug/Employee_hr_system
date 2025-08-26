@@ -15,6 +15,7 @@ class PersonalInfoModel {
   final String residency;
   final String birthPlace;
   final String address;
+  final String? imageUrl;
 
   PersonalInfoModel({
     required this.employeeId,
@@ -33,6 +34,7 @@ class PersonalInfoModel {
     required this.residency,
     required this.birthPlace,
     required this.address,
+    this.imageUrl,
   });
 
   factory PersonalInfoModel.fromJson(Map<String, dynamic> j) {
@@ -49,10 +51,11 @@ class PersonalInfoModel {
       nationalId: j['nationalId'] ?? '',
       iDno: j['iDno'] ?? '',
       passportNumber: j['passportNumber'],
-      serialNo: j['serialno'],
+      serialNo: j['serialNo'] ?? j['serialno'], // ✅ دعم الحالتين
       residency: j['residency'] ?? '',
       birthPlace: j['birthPlace'] ?? '',
       address: j['address'] ?? '',
+      imageUrl: j['imageUrl'],
     );
   }
 
@@ -69,9 +72,33 @@ class PersonalInfoModel {
     "nationalId": nationalId,
     "iDno": iDno,
     "passportNumber": passportNumber,
-    "serialno": serialNo,
+    "serialNo": serialNo, // ✅ موحدة
     "residency": residency,
     "birthPlace": birthPlace,
     "address": address,
+    "imageUrl": imageUrl, // ✅ أضفناها
   };
+
+  // ✅ copyWith لتحديث قيم جزئية
+  PersonalInfoModel copyWith({String? imageUrl}) {
+    return PersonalInfoModel(
+      employeeId: employeeId,
+      fullNameArb: fullNameArb,
+      fullNameEng: fullNameEng,
+      personalEmail: personalEmail,
+      phoneNumber: phoneNumber,
+      birthday: birthday,
+      maritalStatus: maritalStatus,
+      gender: gender,
+      nationality: nationality,
+      nationalId: nationalId,
+      iDno: iDno,
+      passportNumber: passportNumber,
+      serialNo: serialNo,
+      residency: residency,
+      birthPlace: birthPlace,
+      address: address,
+      imageUrl: imageUrl ?? this.imageUrl,
+    );
+  }
 }

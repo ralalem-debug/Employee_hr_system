@@ -1,3 +1,6 @@
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hr_system_/views/profile/editpersonalinfoscreen.dart';
@@ -92,26 +95,93 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       // Profile picture with border effect
-                      Container(
-                        padding: EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: LinearGradient(
-                            colors: [Color(0xff2563eb), Colors.blue.shade200],
-                          ),
-                        ),
-                        child: CircleAvatar(
-                          radius: 52,
-                          backgroundColor: Colors.white,
-                          child: CircleAvatar(
-                            radius: 48,
-                            backgroundColor: Colors.blue.shade50,
-                            backgroundImage: NetworkImage(
-                              "https://ui-avatars.com/api/?name=${personal.fullNameEng.replaceAll(' ', '+')}&background=2563eb&color=fff&rounded=true&size=128",
+                      // Profile picture with border effect
+                      // Profile picture with upload button
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          // الصورة نفسها
+                          Container(
+                            padding: EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: LinearGradient(
+                                colors: [
+                                  Color(0xff2563eb),
+                                  Colors.blue.shade200,
+                                ],
+                              ),
+                            ),
+                            child: CircleAvatar(
+                              radius: 52,
+                              backgroundColor: Colors.white,
+                              child: CircleAvatar(
+                                radius: 48,
+                                backgroundColor: Colors.blue.shade50,
+                                backgroundImage: NetworkImage(
+                                  (personal.imageUrl != null &&
+                                          personal.imageUrl!.isNotEmpty)
+                                      ? "$baseUrl${personal.imageUrl}?v=${DateTime.now().millisecondsSinceEpoch}"
+                                      : "https://ui-avatars.com/api/?name=${personal.fullNameEng.replaceAll(' ', '+')}&background=2563eb&color=fff&rounded=true&size=128",
+                                ),
+                              ),
                             ),
                           ),
-                        ),
+
+                          // زر الكاميرا/الرفع
+                          Positioned(
+                            bottom: 0,
+                            right: 6,
+                            child: GestureDetector(
+                              onTap: () async {
+                                final ImagePicker picker = ImagePicker();
+
+                                // ✅ يخير المستخدم بين الكاميرا والمعرض
+                                final XFile? picked = await picker.pickImage(
+                                  source:
+                                      ImageSource
+                                          .gallery, // أو ImageSource.camera
+                                  maxHeight: 800,
+                                  maxWidth: 800,
+                                  imageQuality: 85,
+                                );
+
+                                if (picked != null) {
+                                  final file = File(picked.path);
+                                  final ok = await controller
+                                      .uploadProfileImage(file);
+                                  if (ok) {
+                                    Get.snackbar(
+                                      "Success",
+                                      "Profile image updated",
+                                    );
+                                  }
+                                }
+                              },
+                              child: Container(
+                                padding: EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black26,
+                                      blurRadius: 3,
+                                      offset: Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Icon(
+                                  Icons.camera_alt,
+                                  color: Color(0xff2563eb),
+                                  size: 20,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
+
                       const SizedBox(height: 15),
                       Text(
                         personal.fullNameEng,

@@ -23,7 +23,7 @@ class SettingsScreen extends StatelessWidget {
       "You have been logged out successfully.",
       snackPosition: SnackPosition.BOTTOM,
       backgroundColor: Colors.blue[50],
-      colorText: Colors.blue[900],
+      colorText: Colors.blue[700],
     );
   }
 

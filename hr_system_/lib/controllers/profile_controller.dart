@@ -267,6 +267,52 @@ class ProfileController extends GetxController {
     }
   }
 
+  Future<bool> uploadProfileImage(File file) async {
+    try {
+      final auth = await _getAuthData();
+      final token = auth["token"]!;
+
+      final formData = dio.FormData.fromMap({
+        "file": await dio.MultipartFile.fromFile(
+          file.path,
+          filename: file.path.split('/').last,
+        ),
+      });
+
+      final response = await dio.Dio().post(
+        "$baseUrl/api/Auth/upload-user-image",
+        data: formData,
+        options: dio.Options(
+          headers: {
+            "Authorization": "Bearer $token",
+            "Content-Type": "multipart/form-data",
+          },
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        final newImageUrl = response.data["imageUrl"];
+
+        if (personalInfo.value != null) {
+          // ✅ حدث الـ model مع الرابط الجديد
+          personalInfo.value = personalInfo.value!.copyWith(
+            imageUrl: newImageUrl,
+          );
+          // ✅ أجبر Obx يعمل rebuild
+          personalInfo.refresh();
+        }
+
+        return true;
+      } else {
+        Get.snackbar("Error", "Failed to upload image");
+        return false;
+      }
+    } catch (e) {
+      Get.snackbar("Error", e.toString());
+      return false;
+    }
+  }
+
   Future<bool> uploadDocument(String fieldName, File file) async {
     try {
       final auth = await _getAuthData();

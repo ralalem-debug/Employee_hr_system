@@ -19,7 +19,7 @@ class EditDocumentsScreen extends StatelessWidget {
       File file = File(result.files.single.path!);
       bool ok = await c.uploadDocument(fieldName, file);
       if (ok) {
-        await c.fetchProfile(); // ✅ جلب جديد بعد الرفع
+        await c.fetchProfile(); // ✅ تحديث البيانات
         Get.snackbar("Success", "$fieldName uploaded successfully");
       } else {
         Get.snackbar("Error", "Failed to upload $fieldName");
@@ -44,73 +44,68 @@ class EditDocumentsScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text(
           "Edit Documents",
-          style: TextStyle(color: Color.fromARGB(255, 255, 255, 255)),
+          style: TextStyle(color: Colors.white),
         ),
         centerTitle: true,
         backgroundColor: Colors.blueAccent,
         elevation: 0,
       ),
-
       body: Obx(() {
         final docs = controller.documents.value;
         if (docs == null) {
-          return Center(child: CircularProgressIndicator());
+          return const Center(child: CircularProgressIndicator());
         }
         return ListView(
-          padding: EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16),
           children: [
-            _docTile("CV", docs.cv, "cv", "pdf"),
+            _docTile("CV", docs.cv, "cv", "pdf", context),
             _docTile(
               "University Certificate",
               docs.universityCertificate,
               "universitycertificate",
               "pdf",
+              context,
             ),
-            _docTile("Contract", docs.contract, "contract", "pdf"),
+            _docTile("Contract", docs.contract, "contract", "pdf", context),
             _docTile(
               "National Identity",
               docs.nationalIdentity,
               "nationalidentity",
               "pdf",
+              context,
             ),
-            _docTile("Passport", docs.passport, "passport", "pdf"),
-            _docTile("Signature", docs.signature, "signature", "pdf"),
-            _docTile("Other", docs.other, "other", "pdf"),
+            _docTile("Passport", docs.passport, "passport", "pdf", context),
+            _docTile("Signature", docs.signature, "signature", "pdf", context),
+            _docTile("Other", docs.other, "other", "pdf", context),
           ],
         );
       }),
     );
   }
 
-  Widget _docTile(String title, String url, String type, String extension) {
+  Widget _docTile(
+    String title,
+    String url,
+    String type,
+    String extension,
+    BuildContext context,
+  ) {
+    final fileName =
+        url.isEmpty ? "No file" : url.split('/').last; // ✅ عرض اسم الملف فقط
+
     return Card(
       color: Colors.white,
       child: ListTile(
         title: Text(title),
-        subtitle:
-            url.isEmpty
-                ? Text("No file")
-                : Text(url.split('/').last), // ✅ عرض اسم الملف فقط
-        leading: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: Icon(Icons.download),
-              onPressed:
-                  url.isEmpty
-                      ? null // ✅ عطّل زر التحميل إذا ما في ملف
-                      : () => _downloadFile(type, extension, url),
-            ),
-          ],
+        subtitle: Text(fileName),
+        leading: IconButton(
+          icon: const Icon(Icons.download),
+          onPressed:
+              url.isEmpty ? null : () => _downloadFile(type, extension, url),
         ),
         trailing: IconButton(
-          icon: Icon(Icons.upload_file),
-          onPressed:
-              () => _pickAndUpload(
-                Get.context!, // أو مرر context من build لو بدك أأمن
-                type,
-                controller,
-              ),
+          icon: const Icon(Icons.upload_file),
+          onPressed: () => _pickAndUpload(context, type, controller),
         ),
       ),
     );

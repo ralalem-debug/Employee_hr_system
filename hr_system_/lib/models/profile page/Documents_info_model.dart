@@ -20,16 +20,28 @@ class DocumentsModel {
   });
 
   factory DocumentsModel.fromJson(Map<String, dynamic> j) {
+    const baseUrl = "http://192.168.1.131:5005"; // عدّل حسب السيرفر عندك
+
+    String buildUrl(dynamic value) {
+      if (value == null || (value is String && value.isEmpty)) return "";
+      final str = value.toString();
+      return str.startsWith("http") ? str : "$baseUrl$str";
+    }
+
     return DocumentsModel(
-      cv: j['cv'] ?? '',
-      universityCertificate: j['universitycertificate'] ?? '',
-      contract: j['contract'] ?? '',
-      nationalIdentity: j['nationalidentity'] ?? '',
-      passport: j['passport'] ?? '',
-      signature: j['signature'] ?? '',
-      other: j['other'] ?? '',
+      cv: buildUrl(j['cv'] ?? j['cvUrl']),
+      universityCertificate: buildUrl(
+        j['universitycertificate'] ?? j['universityCertificateUrl'],
+      ),
+      contract: buildUrl(j['contract'] ?? j['contractUrl']),
+      nationalIdentity: buildUrl(
+        j['nationalidentity'] ?? j['nationalIdentity'],
+      ),
+      passport: buildUrl(j['passport']),
+      signature: buildUrl(j['signature']),
+      other: buildUrl(j['other']),
       certificates:
-          (j['certificates'] as List?)?.map((e) => e.toString()).toList() ?? [],
+          (j['certificates'] as List?)?.map((e) => buildUrl(e)).toList() ?? [],
     );
   }
 }
