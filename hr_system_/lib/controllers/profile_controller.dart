@@ -320,7 +320,7 @@ class ProfileController extends GetxController {
 
       final response = await dio.Dio().get(
         "$baseUrl/api/Auth/user-image",
-        queryParameters: {"userId": userId}, // ✅ نضيف userId هنا
+        queryParameters: {"userId": userId},
         options: dio.Options(
           headers: {
             "Authorization": "Bearer $token",
@@ -332,10 +332,8 @@ class ProfileController extends GetxController {
       print("📷 Full User Image Response: ${response.data}");
 
       if (response.statusCode == 200) {
-        final imageUrl =
-            response.data["imageUrl"] ??
-            response.data["imagePath"] ??
-            response.data["data"]?["imageUrl"];
+        // السيرفر بيرجع String مباشر
+        final imageUrl = response.data is String ? response.data : null;
 
         if (imageUrl != null && personalInfo.value != null) {
           personalInfo.value = personalInfo.value!.copyWith(
