@@ -118,10 +118,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   (personal.imageUrl != null &&
                                           personal.imageUrl!.isNotEmpty)
                                       ? NetworkImage(
-                                        personal.imageUrl!.startsWith("http")
-                                            ? personal.imageUrl!
-                                            : "$baseUrl${personal.imageUrl}", // ✅ ركب baseUrl إذا ناقص
-                                      )
+                                        personal.imageUrl!,
+                                      ) // ✅ صار كامل من الكنترولر
                                       : null,
                               child:
                                   (personal.imageUrl == null ||
@@ -131,7 +129,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             ? personal.fullNameEng
                                                 .substring(0, 2)
                                                 .toUpperCase()
-                                            : "", // ✅ fallback فاضي إذا الاسم مش موجود
+                                            : "", // ✅ fallback إذا الاسم فاضي
                                         style: const TextStyle(
                                           color: Colors.white,
                                           fontSize: 20,

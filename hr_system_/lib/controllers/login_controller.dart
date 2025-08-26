@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'package:get/get.dart';
-import 'package:hr_system_/views/login_screen.dart';
 import 'package:http/http.dart' as http;
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/login_model.dart';
 import '../views/after login/change_password_screen.dart';
+import '../views/home_screen.dart';
 
 class LoginController extends GetxController {
   var loginAttempts = 0.obs;
@@ -116,8 +116,8 @@ class LoginController extends GetxController {
             ),
           );
         } else {
-          // Not first login → go directly to Home
-          Get.offAll(() => const LoginScreen());
+          // Not first login → go directly to Home ✅
+          Get.offAll(() => const HomeScreen());
         }
 
         loginAttempts.value = 0;

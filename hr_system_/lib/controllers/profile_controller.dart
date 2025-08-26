@@ -311,9 +311,16 @@ class ProfileController extends GetxController {
     try {
       final auth = await _getAuthData();
       final token = auth["token"]!;
+      final userId = await storage.read(key: 'user_id') ?? '';
+
+      if (userId.isEmpty) {
+        print("❌ No userId found in storage");
+        return;
+      }
 
       final response = await dio.Dio().get(
-        "$baseUrl/api/Auth/user-image", // ✅ جرب بدون employeeId
+        "$baseUrl/api/Auth/user-image",
+        queryParameters: {"userId": userId}, // ✅ نضيف userId هنا
         options: dio.Options(
           headers: {
             "Authorization": "Bearer $token",
@@ -325,7 +332,6 @@ class ProfileController extends GetxController {
       print("📷 Full User Image Response: ${response.data}");
 
       if (response.statusCode == 200) {
-        // جرب كل المفاتيح المحتملة
         final imageUrl =
             response.data["imageUrl"] ??
             response.data["imagePath"] ??
