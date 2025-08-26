@@ -11,16 +11,6 @@ class SettingsScreen extends StatelessWidget {
     Get.offAllNamed('/login');
   }
 
-  // Future<void> _goToChangePassword() async {
-  //   final prefs = await SharedPreferences.getInstance();
-  //   final token = prefs.getString('token') ?? "";
-  //   if (token.isNotEmpty) {
-  //     Get.toNamed('/change_pass', arguments: token);
-  //   } else {
-  //     Get.snackbar("Error", "No token found, please login again.");
-  //   }
-  // }
-
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
