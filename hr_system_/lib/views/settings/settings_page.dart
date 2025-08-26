@@ -1,14 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hr_system_/views/employee_nav_bar.dart';
 import '../../../controllers/settings_controller.dart';
 
 class SettingsScreen extends StatelessWidget {
   final SettingsController controller = Get.put(SettingsController());
+  final FlutterSecureStorage secureStorage = const FlutterSecureStorage();
 
   SettingsScreen({super.key});
+
   Future<void> _logout() async {
+    // امسح كل البيانات المخزنة بالـ Secure Storage
+    await secureStorage.deleteAll();
+
+    // بعد المسح رجع المستخدم لشاشة تسجيل الدخول
     Get.offAllNamed('/login');
+
+    // اعرض تنبيه بسيط
+    Get.snackbar(
+      "Logged out",
+      "You have been logged out successfully.",
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.blue[50],
+      colorText: Colors.blue[900],
+    );
   }
 
   @override
@@ -30,12 +46,14 @@ class SettingsScreen extends StatelessWidget {
         ),
         body: Column(
           children: [
-            _headerCard(), // الهيدر الجديد بدون صورة
+            _headerCard(), // الهيدر
             const SizedBox(height: 14),
+
             _sectionTitle("Account Settings"),
             _settingTile("Edit profile", Icons.person_outline, () {
               Get.toNamed('/profile');
             }),
+
             // _settingTile("Change password", Icons.lock_outline, () {
             //   _goToChangePassword();
             // }),
@@ -47,6 +65,7 @@ class SettingsScreen extends StatelessWidget {
             _settingTile("Privacy policy", Icons.privacy_tip_outlined, () {
               Get.toNamed('/privacypolicy');
             }),
+
             const SizedBox(height: 14),
             _sectionTitle("Account"),
             _settingTile("Logout", Icons.logout, () {
