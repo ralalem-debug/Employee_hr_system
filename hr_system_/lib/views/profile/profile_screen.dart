@@ -281,27 +281,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Get.to(() => EditDocumentsScreen(controller: controller)),
             ),
             _profileCard([
-              _docRow("CV", docs?.cvUrl, Icons.description_rounded),
+              _docRow("CV", docs?.cv, Icons.description_rounded),
               _docRow(
                 "University Certificate",
-                docs?.universityCertificateUrl,
+                docs?.universityCertificate,
                 Icons.school,
               ),
-              _docRow(
-                "Contract",
-                docs?.contractUrl,
-                Icons.assignment_turned_in,
-              ),
+              _docRow("Contract", docs?.contract, Icons.assignment_turned_in),
               _docRow(
                 "National Identity",
-                docs?.nationalIdentity, // ✅ تعديل
+                docs?.nationalIdentity,
                 Icons.perm_identity,
               ),
-              _docRow(
-                "Passport",
-                docs?.passport, // ✅ تعديل
-                Icons.card_travel_rounded,
-              ),
+              _docRow("Passport", docs?.passport, Icons.card_travel_rounded),
+              _docRow("Signature", docs?.signature, Icons.border_color),
+              _docRow("Other", docs?.other, Icons.attach_file),
 
               if (docs != null && docs.certificates.isNotEmpty) ...[
                 const SizedBox(height: 6),
@@ -321,8 +315,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ],
             ]),
-
-            const SizedBox(height: 32),
           ],
         );
       }),
@@ -385,27 +377,62 @@ class _ProfileScreenState extends State<ProfileScreen> {
     ),
   );
 
-  // ✅ Document row مع baseUrl
-  Widget _docRow(String label, String? url, IconData icon) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 6),
-    child: Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(5),
-          decoration: BoxDecoration(
-            color: Colors.blue.shade50,
-            shape: BoxShape.circle,
+  // ✅ Document row مع زر تحميل واسم الملف
+  Widget _docRow(String label, String? url, IconData icon) {
+    final fileName =
+        (url == null || url.isEmpty)
+            ? "No file"
+            : url.split('/').last; // اسم الملف من الرابط
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          // أيقونة على اليسار
+          Container(
+            padding: const EdgeInsets.all(5),
+            decoration: BoxDecoration(
+              color: Colors.blue.shade50,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: Colors.lightBlue.shade400, size: 18),
           ),
-          child: Icon(icon, color: Colors.lightBlue.shade400, size: 18),
-        ),
-        const SizedBox(width: 14),
-        SizedBox(
-          width: 120,
-          child: Text(label, style: TextStyle(color: Colors.blueGrey[800])),
-        ),
-      ],
-    ),
-  );
+          const SizedBox(width: 14),
+
+          // اسم المستند
+          Expanded(
+            child: Text(
+              "$label: $fileName",
+              style: TextStyle(
+                color: Colors.blueGrey[800],
+                fontSize: 14.2,
+                fontWeight: FontWeight.w500,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+
+          // زر التحميل/الفتح
+          if (url != null && url.isNotEmpty)
+            IconButton(
+              icon: const Icon(
+                Icons.download_rounded,
+                color: Color(0xff2563eb),
+                size: 20,
+              ),
+              tooltip: "Open / Download",
+              onPressed: () {
+                controller.downloadDocument(
+                  label,
+                  url.split('.').last,
+                  directUrl: url,
+                ); // استدعاء دالة التحميل
+              },
+            ),
+        ],
+      ),
+    );
+  }
 
   Widget _chip(String value, IconData icon) => Container(
     decoration: BoxDecoration(

@@ -59,21 +59,23 @@ class EditDocumentsScreen extends StatelessWidget {
         return ListView(
           padding: EdgeInsets.all(16),
           children: [
-            _docTile("CV", docs.cvUrl, "cvUrl", "pdf"),
+            _docTile("CV", docs.cv, "cv", "pdf"),
             _docTile(
               "University Certificate",
-              docs.universityCertificateUrl,
-              "universityCertificateUrl",
+              docs.universityCertificate,
+              "universitycertificate",
               "pdf",
             ),
-            _docTile("Contract", docs.contractUrl, "contractUrl", "pdf"),
+            _docTile("Contract", docs.contract, "contract", "pdf"),
             _docTile(
               "National Identity",
               docs.nationalIdentity,
-              "nationalIdentity",
+              "nationalidentity",
               "jpg",
             ),
             _docTile("Passport", docs.passport, "passport", "jpg"),
+            _docTile("Signature", docs.signature, "signature", "jpg"),
+            _docTile("Other", docs.other, "other", "pdf"),
           ],
         );
       }),
@@ -82,24 +84,33 @@ class EditDocumentsScreen extends StatelessWidget {
 
   Widget _docTile(String title, String url, String type, String extension) {
     return Card(
-      color: const Color.fromARGB(255, 255, 255, 255),
+      color: Colors.white,
       child: ListTile(
         title: Text(title),
-        subtitle: url.isEmpty ? Text("No file") : Text(url),
+        subtitle:
+            url.isEmpty
+                ? Text("No file")
+                : Text(url.split('/').last), // ✅ عرض اسم الملف فقط
         leading: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
               icon: Icon(Icons.download),
-              onPressed: () => _downloadFile(type, extension, url),
+              onPressed:
+                  url.isEmpty
+                      ? null // ✅ عطّل زر التحميل إذا ما في ملف
+                      : () => _downloadFile(type, extension, url),
             ),
           ],
         ),
         trailing: IconButton(
           icon: Icon(Icons.upload_file),
           onPressed:
-              () =>
-                  _pickAndUpload(Get.context!, type, controller), // ✅ رفع جديد
+              () => _pickAndUpload(
+                Get.context!, // أو مرر context من build لو بدك أأمن
+                type,
+                controller,
+              ),
         ),
       ),
     );

@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:dio/dio.dart' as dio;
 import 'package:open_filex/open_filex.dart';
+import 'package:path_provider/path_provider.dart';
 
 class ProfileController extends GetxController {
   var personalInfo = Rxn<PersonalInfoModel>();
@@ -314,18 +315,30 @@ class ProfileController extends GetxController {
       final auth = await _getAuthData();
       final token = auth["token"]!;
 
-      // استخدم الرابط المباشر من السيرفر إذا موجود
       if (directUrl == null || directUrl.isEmpty) {
         throw Exception("No direct URL provided for $type");
       }
 
-      // إذا السيرفر مرجع الرابط بدون http:// أضف baseUrl
+      // لو السيرفر مرجع الرابط بدون http أضف baseUrl
       final url =
           directUrl.startsWith("http") ? directUrl : "$baseUrl$directUrl";
 
-      // حفظ بالـ Downloads
-      final dir = Directory("/storage/emulated/0/Download");
-      if (!dir.existsSync()) dir.createSync(recursive: true);
+      Directory dir;
+
+      if (Platform.isAndroid) {
+        // 📂 Android → Download folder
+        dir = Directory("/storage/emulated/0/Download");
+        if (!dir.existsSync()) {
+          dir =
+              await getExternalStorageDirectory() ??
+              await getTemporaryDirectory();
+        }
+      } else if (Platform.isIOS) {
+        // 🍏 iOS → Documents folder (يظهر في Files app)
+        dir = await getApplicationDocumentsDirectory();
+      } else {
+        dir = await getTemporaryDirectory(); // fallback لأي نظام تاني
+      }
 
       final savePath =
           "${dir.path}/$type-${DateTime.now().millisecondsSinceEpoch}.$extension";
@@ -337,10 +350,12 @@ class ProfileController extends GetxController {
       );
 
       if (response.statusCode == 200) {
-        await OpenFilex.open(savePath);
+        await OpenFilex.open(savePath); // ✅ فتح الملف بعد التحميل
+        Get.snackbar("✅ Success", "File downloaded to ${dir.path}");
         return true;
       } else {
         print("❌ Download failed [${response.statusCode}]: ${response.data}");
+        Get.snackbar("❌ Error", "Download failed [${response.statusCode}]");
         return false;
       }
     } catch (e) {
