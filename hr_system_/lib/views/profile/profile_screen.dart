@@ -23,9 +23,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      controller.fetchProfile();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await controller.fetchProfile();
+      await controller.fetchUserImage();
     });
   }
 

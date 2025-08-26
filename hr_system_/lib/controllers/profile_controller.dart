@@ -313,6 +313,29 @@ class ProfileController extends GetxController {
     }
   }
 
+  Future<void> fetchUserImage() async {
+    try {
+      final auth = await _getAuthData();
+      final token = auth["token"]!;
+
+      final response = await dio.Dio().get(
+        "$baseUrl/api/Auth/user-image",
+        options: dio.Options(headers: {"Authorization": "Bearer $token"}),
+      );
+
+      if (response.statusCode == 200) {
+        final imageUrl = response.data["imageUrl"];
+
+        if (personalInfo.value != null) {
+          personalInfo.value = personalInfo.value!.copyWith(imageUrl: imageUrl);
+          personalInfo.refresh();
+        }
+      }
+    } catch (e) {
+      print("❌ fetchUserImage error: $e");
+    }
+  }
+
   Future<bool> uploadDocument(String fieldName, File file) async {
     try {
       final auth = await _getAuthData();
