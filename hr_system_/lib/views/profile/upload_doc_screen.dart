@@ -71,10 +71,10 @@ class EditDocumentsScreen extends StatelessWidget {
               "National Identity",
               docs.nationalIdentity,
               "nationalidentity",
-              "jpg",
+              "pdf",
             ),
-            _docTile("Passport", docs.passport, "passport", "jpg"),
-            _docTile("Signature", docs.signature, "signature", "jpg"),
+            _docTile("Passport", docs.passport, "passport", "pdf"),
+            _docTile("Signature", docs.signature, "signature", "pdf"),
             _docTile("Other", docs.other, "other", "pdf"),
           ],
         );
