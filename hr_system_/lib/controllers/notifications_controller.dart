@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/notification_model.dart';
 
 class NotificationsController extends GetxController {
@@ -11,6 +11,9 @@ class NotificationsController extends GetxController {
   Timer? _timer;
 
   List<String> _readIds = [];
+
+  // 🔐 استخدم secure storage بدل shared prefs
+  final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
   @override
   void onInit() {
@@ -59,8 +62,8 @@ class NotificationsController extends GetxController {
     try {
       isLoading.value = true;
 
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token');
+      // 🔐 استرجاع التوكن من secure storage
+      final token = await _storage.read(key: 'auth_token');
       await _loadReadNotificationIds();
 
       if (token == null || token.isEmpty) {
@@ -112,15 +115,21 @@ class NotificationsController extends GetxController {
     }
   }
 
-  ///  تحميل قائمة الـ IDs المقروءة من SharedPreferences
+  ///  تحميل قائمة الـ IDs المقروءة من secure storage
   Future<void> _loadReadNotificationIds() async {
-    final prefs = await SharedPreferences.getInstance();
-    _readIds = prefs.getStringList('read_notifications') ?? [];
+    final data = await _storage.read(key: 'read_notifications');
+    if (data != null && data.isNotEmpty) {
+      _readIds = List<String>.from(jsonDecode(data));
+    } else {
+      _readIds = [];
+    }
   }
 
-  ///  حفظ قائمة المقروءات في SharedPreferences
+  ///  حفظ قائمة المقروءات في secure storage
   Future<void> _saveReadNotificationIds() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList('read_notifications', _readIds);
+    await _storage.write(
+      key: 'read_notifications',
+      value: jsonEncode(_readIds),
+    );
   }
 }
