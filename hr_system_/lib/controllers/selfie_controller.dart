@@ -39,7 +39,7 @@ class SelfieController extends GetxController {
       }
 
       final uri = Uri.parse(
-        "http://192.168.1.131:5005/api/employee/upload-selfie",
+        "http://192.168.1.213:5000/api/employee/upload-selfie",
       );
       final req = http.MultipartRequest('POST', uri);
 

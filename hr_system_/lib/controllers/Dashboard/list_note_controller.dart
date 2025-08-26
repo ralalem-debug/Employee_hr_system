@@ -11,8 +11,8 @@ class NotesListController extends GetxController {
   var error = RxnString();
 
   static const String getUrl =
-      'http://192.168.1.131:5005/api/notes/Employee-notes';
-  static const String deleteUrl = 'http://192.168.1.131:5005/api/notes/delete/';
+      'http://192.168.1.213:5000/api/notes/Employee-notes';
+  static const String deleteUrl = 'http://192.168.1.213:5000/api/notes/delete/';
 
   // ✅ Secure storage
   final storage = const FlutterSecureStorage();

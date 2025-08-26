@@ -18,7 +18,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   final ProfileController controller = Get.put(ProfileController());
 
-  final String baseUrl = "http://192.168.1.131:5005";
+  final String baseUrl = "http://192.168.1.213:5000";
 
   @override
   void initState() {

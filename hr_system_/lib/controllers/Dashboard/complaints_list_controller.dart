@@ -11,9 +11,9 @@ class ComplaintsListController extends GetxController {
   var error = RxnString();
 
   static const String getUrl =
-      'http://192.168.1.131:5005/api/complaints/employee-complaints';
+      'http://192.168.1.213:5000/api/complaints/employee-complaints';
   static const String deleteUrl =
-      'http://192.168.1.131:5005/api/complaints/delete/';
+      'http://192.168.1.213:5000/api/complaints/delete/';
 
   // ✅ Secure storage
   final storage = const FlutterSecureStorage();

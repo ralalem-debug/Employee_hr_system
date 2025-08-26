@@ -27,7 +27,7 @@ class ChangePasswordController extends GetxController {
       }
 
       final url = Uri.parse(
-        'http://192.168.1.131:5005/api/Auth/change-password',
+        'http://192.168.1.213:5000/api/Auth/change-password',
       );
       final res = await http.put(
         url,

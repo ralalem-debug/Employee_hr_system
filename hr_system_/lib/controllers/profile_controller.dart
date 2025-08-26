@@ -18,7 +18,7 @@ class ProfileController extends GetxController {
   var isLoading = false.obs;
   var error = RxnString();
 
-  final String baseUrl = "http://192.168.1.131:5005";
+  final String baseUrl = "http://192.168.1.213:5000";
 
   // ✅ Secure storage
   final storage = const FlutterSecureStorage();
@@ -332,7 +332,6 @@ class ProfileController extends GetxController {
       print("📷 Full User Image Response: ${response.data}");
 
       if (response.statusCode == 200) {
-        // السيرفر بيرجع String مباشر
         final imageUrl = response.data is String ? response.data : null;
 
         if (imageUrl != null && personalInfo.value != null) {

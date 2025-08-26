@@ -12,7 +12,7 @@ class LeaveRequestController {
     File? document,
   }) async {
     final uri = Uri.parse(
-      'http://192.168.1.131:5005/api/employee/request-leave',
+      'http://192.168.1.213:5000/api/employee/request-leave',
     );
     var request = http.MultipartRequest('POST', uri);
 
