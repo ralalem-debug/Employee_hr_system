@@ -10,7 +10,7 @@ class VerifyCodeController extends GetxController {
   Future<bool> verifyCode(String code) async {
     isLoading.value = true;
     final url = Uri.parse(
-      "http://192.168.1.213:5000/api/Auth/verify-reset-code",
+      "http://192.168.1.128:5000/api/Auth/verify-reset-code",
     );
     final res = await http.post(
       url,

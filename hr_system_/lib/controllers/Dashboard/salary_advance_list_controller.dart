@@ -11,9 +11,9 @@ class SalaryAdvanceListController extends GetxController {
   var error = RxnString();
 
   static const String getUrl =
-      'http://192.168.1.213:5000/api/SalaryAdvance/employee-requests';
+      'http://192.168.1.128:5000/api/SalaryAdvance/employee-requests';
   static const String deleteUrl =
-      'http://192.168.1.213:5000/api/SalaryAdvance/';
+      'http://192.168.1.128:5000/api/SalaryAdvance/';
 
   // ✅ Secure storage
   final storage = const FlutterSecureStorage();
