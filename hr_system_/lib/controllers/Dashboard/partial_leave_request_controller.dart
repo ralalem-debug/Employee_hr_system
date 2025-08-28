@@ -79,7 +79,7 @@ class LeaveRequestController {
         reasonController.text.trim().isEmpty) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('جميع الحقول مطلوبة')));
+      ).showSnackBar(SnackBar(content: Text('all fields are required')));
       return;
     }
 
@@ -113,14 +113,12 @@ class LeaveRequestController {
         body: jsonEncode(request.toJson()),
       );
 
-      // طباعة النتيجة في الـ console
       print("URL: $url");
       print("STATUS: ${response.statusCode}");
       print("BODY: ${response.body}");
 
-      String message = 'تم إرسال طلب الإجازة الجزئية بنجاح!';
+      String message = 'Request submitted successfully';
 
-      // محاولة قراءة رسالة الباك
       if (response.body.isNotEmpty) {
         try {
           final decoded = jsonDecode(response.body);
