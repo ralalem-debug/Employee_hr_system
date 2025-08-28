@@ -12,7 +12,7 @@ class ResetPasswordController extends GetxController {
     String confirmPassword,
   ) async {
     isLoading.value = true;
-    final url = Uri.parse("http://192.168.1.128:5000/api/Auth/reset-password");
+    final url = Uri.parse("http://192.168.1.128/api/Auth/reset-password");
     try {
       final res = await http.post(
         url,

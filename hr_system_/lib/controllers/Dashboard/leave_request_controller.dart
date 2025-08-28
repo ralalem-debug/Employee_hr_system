@@ -11,9 +11,7 @@ class LeaveRequestController {
     required String comments,
     File? document,
   }) async {
-    final uri = Uri.parse(
-      'http://192.168.1.128:5000/api/employee/request-leave',
-    );
+    final uri = Uri.parse('http://192.168.1.128/api/employee/request-leave');
     var request = http.MultipartRequest('POST', uri);
 
     request.headers['Authorization'] = 'Bearer $token';

@@ -47,6 +47,8 @@ PODS:
     - Mantle
     - SDWebImage
     - SDWebImageWebPCoder
+  - flutter_secure_storage (6.0.0):
+    - Flutter
   - gal (1.0.0):
     - Flutter
     - FlutterMacOS
@@ -85,7 +87,7 @@ PODS:
   - photo_manager (3.7.1):
     - Flutter
     - FlutterMacOS
-  - record_ios (1.0.0):
+  - record_ios (1.1.0):
     - Flutter
   - SDWebImage (5.21.1):
     - SDWebImage/Core (= 5.21.1)
@@ -120,6 +122,7 @@ DEPENDENCIES:
   - file_selector_ios (from `.symlinks/plugins/file_selector_ios/ios`)
   - Flutter (from `Flutter`)
   - flutter_image_compress_common (from `.symlinks/plugins/flutter_image_compress_common/ios`)
+  - flutter_secure_storage (from `.symlinks/plugins/flutter_secure_storage/ios`)
   - gal (from `.symlinks/plugins/gal/darwin`)
   - get_thumbnail_video (from `.symlinks/plugins/get_thumbnail_video/ios`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
@@ -163,6 +166,8 @@ EXTERNAL SOURCES:
     :path: Flutter
   flutter_image_compress_common:
     :path: ".symlinks/plugins/flutter_image_compress_common/ios"
+  flutter_secure_storage:
+    :path: ".symlinks/plugins/flutter_secure_storage/ios"
   gal:
     :path: ".symlinks/plugins/gal/darwin"
   get_thumbnail_video:
@@ -208,6 +213,7 @@ SPEC CHECKSUMS:
   file_selector_ios: f92e583d43608aebc2e4a18daac30b8902845502
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   flutter_image_compress_common: 1697a328fd72bfb335507c6bca1a65fa5ad87df1
+  flutter_secure_storage: 1ed9476fba7e7a782b22888f956cce43e2c62f13
   gal: baecd024ebfd13c441269ca7404792a7152fde89
   get_thumbnail_video: 1a754d46b860dffefcc57b7290a43089cd5d7e58
   image_picker_ios: 7fe1ff8e34c1790d6fff70a32484959f563a928a
@@ -219,7 +225,7 @@ SPEC CHECKSUMS:
   package_info_plus: af8e2ca6888548050f16fa2f1938db7b5a5df499
   path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
   photo_manager: 1d80ae07a89a67dfbcae95953a1e5a24af7c3e62
-  record_ios: fee1c924aa4879b882ebca2b4bce6011bcfc3d8b
+  record_ios: f75fa1d57f840012775c0e93a38a7f3ceea1a374
   SDWebImage: f29024626962457f3470184232766516dee8dfea
   SDWebImageWebPCoder: e38c0a70396191361d60c092933e22c20d5b1380
   share_plus: 50da8cb520a8f0f65671c6c6a99b3617ed10a58a

@@ -71,7 +71,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
       final employeeId = Uri.encodeComponent(rawEmployeeId);
       final url = Uri.parse(
-        'http://192.168.1.128:5000/api/employee/get-performance/$employeeId',
+        'http://192.168.1.128/api/employee/get-performance/$employeeId',
       );
 
       final res = await http.get(

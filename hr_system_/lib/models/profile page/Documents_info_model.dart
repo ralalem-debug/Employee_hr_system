@@ -20,7 +20,7 @@ class DocumentsModel {
   });
 
   factory DocumentsModel.fromJson(Map<String, dynamic> j) {
-    const baseUrl = "http://192.168.1.128:5000"; // عدّل حسب السيرفر عندك
+    const baseUrl = "http://192.168.1.128"; // عدّل حسب السيرفر عندك
 
     String buildUrl(dynamic value) {
       if (value == null || (value is String && value.isEmpty)) return "";

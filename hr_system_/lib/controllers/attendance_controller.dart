@@ -4,7 +4,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/attendance_model.dart';
 
 class AttendanceController {
-  final String baseUrl = 'http://192.168.1.128:5000/api/attendance';
+  final String baseUrl = 'http://192.168.1.128/api/attendance';
 
   // ✅ Secure storage instance
   final storage = const FlutterSecureStorage();
