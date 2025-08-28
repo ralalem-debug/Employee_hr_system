@@ -16,7 +16,6 @@ class ComplaintController extends GetxController {
   static const String apiUrl =
       'http://192.168.1.128:5000/api/complaints/send-complaint';
 
-  // ✅ Secure storage
   final storage = const FlutterSecureStorage();
 
   Future<void> sendComplaint() async {
