@@ -19,7 +19,6 @@ class LoginController extends GetxController {
   String? employeeId;
   String? userId;
 
-  // ✅ Secure storage instance
   final storage = const FlutterSecureStorage();
 
   Future<bool> login(LoginModel model) async {
