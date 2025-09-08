@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hr_system_/controllers/jobs_controller.dart';
 import 'package:hr_system_/views/Nonemployees/custom_nav_bar.dart';
-import 'package:hr_system_/views/Nonemployees/job_card.dart'; // ✅ استدعاء الويجت الجديد
+import 'package:hr_system_/views/Nonemployees/job_card.dart';
 
 class NonEmployeeHomeScreen extends StatefulWidget {
   const NonEmployeeHomeScreen({super.key});
@@ -23,150 +23,192 @@ class _NonEmployeeHomeScreenState extends State<NonEmployeeHomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.grey.shade100,
       body: SafeArea(
         child: Obx(() {
           return SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 12),
-                const Text(
-                  "HELLO",
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  "ARE YOU READY TO FIND YOUR JOB?",
-                  style: TextStyle(fontSize: 14, color: Colors.black54),
-                ),
-                const SizedBox(height: 18),
-
-                // Jobs header
-                Row(
-                  children: [
-                    Container(width: 4, height: 22, color: Colors.blue),
-                    const SizedBox(width: 8),
-                    const Text(
-                      "Jobs Available",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                // 🔹 Header
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Color.fromARGB(255, 83, 176, 252),
+                        Color.fromARGB(255, 0, 77, 155),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
-                  ],
+                    borderRadius: BorderRadius.vertical(
+                      bottom: Radius.circular(30),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      Text(
+                        "👋 Welcome Back,",
+                        style: TextStyle(color: Colors.white70, fontSize: 14),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        "Ready to find your next Job?",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // 🔹 Jobs Section
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    children: const [
+                      Icon(Icons.work_outline, color: Colors.blue),
+                      SizedBox(width: 8),
+                      Text(
+                        "Recommended Jobs",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 12),
 
                 if (_c.isLoading.value)
-                  const Center(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 40),
-                      child: CircularProgressIndicator(),
-                    ),
-                  )
+                  const Center(child: CircularProgressIndicator())
                 else if (_c.jobs.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 24),
-                    child: Text("No jobs available right now."),
-                  )
+                  const Center(child: Text("No jobs available right now."))
                 else
-                  Column(
-                    children:
-                        _c.jobs
-                            .map(
-                              (job) => Padding(
-                                padding: const EdgeInsets.only(bottom: 12),
-                                child: JobCard(
-                                  job: job,
-                                  onApply: () => _c.applyToJob(job.jobId),
-                                  isApplied: _c.appliedJobIds.contains(
-                                    job.jobId,
-                                  ),
-                                ),
+                  SizedBox(
+                    height: 260,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemBuilder:
+                          (_, i) => SizedBox(
+                            width: MediaQuery.of(context).size.width * 0.75,
+                            child: JobCard(
+                              job: _c.jobs[i],
+                              onApply: () => _c.applyToJob(_c.jobs[i].jobId),
+                              isApplied: _c.appliedJobIds.contains(
+                                _c.jobs[i].jobId,
                               ),
-                            )
-                            .toList(),
-                  ),
-
-                const SizedBox(height: 24),
-
-                // Upcoming Interview (placeholder – اربطها لاحقًا من API لو موجود)
-                Row(
-                  children: [
-                    Container(width: 4, height: 22, color: Colors.blue),
-                    const SizedBox(width: 8),
-                    const Text(
-                      "Upcoming Interview",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                            ),
+                          ),
+                      separatorBuilder: (_, __) => const SizedBox(width: 12),
+                      itemCount: _c.jobs.length,
                     ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  "After The HR review your CV and test results they booked this interview so make sure you attended",
-                  style: TextStyle(fontSize: 13, color: Colors.black54),
-                ),
-                const SizedBox(height: 14),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: const Color(0xffe7f0fb),
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "Senior Accountant Interview",
+
+                const SizedBox(height: 30),
+
+                // 🔹 Upcoming Interview
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    children: const [
+                      Icon(Icons.calendar_month, color: Colors.blue),
+                      SizedBox(width: 8),
+                      Text(
+                        "Upcoming Interview",
                         style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      _rowIconText(Icons.event, "4.09.2025, THU"),
-                      _rowIconText(Icons.access_time, "9:00 AM"),
-                      _rowIconText(Icons.videocam_outlined, "Google Meet"),
-                      _rowIconText(Icons.link, "www.Linkqadi.com//"),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          OutlinedButton(
-                            onPressed: () {},
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 18,
-                              ),
-                            ),
-                            child: const Text("Contact"),
-                          ),
-                          const SizedBox(width: 12),
-                          ElevatedButton(
-                            onPressed: () {},
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 18,
-                              ),
-                            ),
-                            child: const Text("Confirm Your Attendance"),
-                          ),
-                        ],
-                      ),
                     ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 8,
+                          offset: Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Senior Accountant Interview",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: const [
+                            Icon(Icons.event, size: 18, color: Colors.blue),
+                            SizedBox(width: 6),
+                            Text("4.09.2025, THU"),
+                          ],
+                        ),
+                        Row(
+                          children: const [
+                            Icon(
+                              Icons.access_time,
+                              size: 18,
+                              color: Colors.blue,
+                            ),
+                            SizedBox(width: 6),
+                            Text("9:00 AM"),
+                          ],
+                        ),
+                        Row(
+                          children: const [
+                            Icon(
+                              Icons.videocam_outlined,
+                              size: 18,
+                              color: Colors.blue,
+                            ),
+                            SizedBox(width: 6),
+                            Text("Google Meet"),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+                        Row(
+                          children: [
+                            OutlinedButton(
+                              onPressed: () {},
+                              child: const Text("Contact HR"),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () {},
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blue,
+                                ),
+                                child: const Text("Confirm Attendance"),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 40),
@@ -178,15 +220,4 @@ class _NonEmployeeHomeScreenState extends State<NonEmployeeHomeScreen> {
       bottomNavigationBar: const CustomNavBar(currentIndex: 0),
     );
   }
-
-  Widget _rowIconText(IconData i, String t) => Padding(
-    padding: const EdgeInsets.only(bottom: 6),
-    child: Row(
-      children: [
-        Icon(i, size: 18, color: Colors.black87),
-        const SizedBox(width: 8),
-        Flexible(child: Text(t)),
-      ],
-    ),
-  );
 }

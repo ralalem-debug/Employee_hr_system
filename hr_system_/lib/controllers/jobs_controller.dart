@@ -51,10 +51,7 @@ class JobsController extends GetxController {
 
   Future<void> applyToJob(String jobId) async {
     final token = await _getToken();
-    if (token == null || token.isEmpty) {
-      Get.snackbar("Error", "Missing token. Please login again.");
-      return;
-    }
+    if (token == null) return;
 
     final url = Uri.parse("$baseUrl/api/nonemployees/$jobId/apply");
     try {
@@ -67,13 +64,49 @@ class JobsController extends GetxController {
       );
 
       if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        if (data['message'] == "Application submitted successfully.") {
+          appliedJobIds.add(jobId); // ✅ احفظ أنه قدّم
+          Get.snackbar("Success", "You applied successfully!");
+        }
+      } else if (res.statusCode == 400) {
         appliedJobIds.add(jobId);
-        Get.snackbar("Success", "Application submitted successfully ✅");
+        Get.snackbar("Notice", "You have already applied to this job.");
       } else {
-        Get.snackbar("Error", "Apply failed (${res.statusCode})\n${res.body}");
+        Get.snackbar("Error", "Unexpected error (${res.statusCode})");
+      }
+    } catch (e) {
+      Get.snackbar("Error", "Network error: $e");
+    }
+  }
+
+  Future<JobModel?> fetchJobDetails(String jobId) async {
+    final token = await _getToken();
+    if (token == null || token.isEmpty) {
+      Get.snackbar("Error", "Missing token. Please login again.");
+      return null;
+    }
+
+    final url = Uri.parse("$baseUrl/api/jobs/$jobId");
+    try {
+      final res = await http.get(
+        url,
+        headers: {
+          'accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        return JobModel.fromJson(data);
+      } else {
+        Get.snackbar("Error", "Failed to load details (${res.statusCode})");
+        return null;
       }
     } catch (e) {
       Get.snackbar("Network", "Failed: $e");
+      return null;
     }
   }
 }
