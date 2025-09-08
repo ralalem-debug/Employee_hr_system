@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:hr_system_/views/non_employee_home_page.dart';
-import 'package:hr_system_/views/signup_page.dart';
+import 'package:hr_system_/views/Nonemployees/non_employee_home_page.dart';
+import 'package:hr_system_/views/Nonemployees/signup_page.dart';
 import '../controllers/login_controller.dart';
 import '../views/home_screen.dart';
 import '../views/after login/change_password_screen.dart';
@@ -181,7 +181,7 @@ class _LoginScreenState extends State<LoginScreen>
           ),
         ),
         const SizedBox(height: 12),
-        // رابط SignUp بخط صغير
+
         GestureDetector(
           onTap: () => Get.to(() => const NonEmployeeSignUpPage()),
           child: const Text(
