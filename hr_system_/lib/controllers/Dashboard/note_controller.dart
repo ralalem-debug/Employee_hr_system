@@ -13,7 +13,7 @@ class NoteController extends GetxController {
   var isLoading = false.obs;
   var error = RxnString();
 
-  static const String apiUrl = 'http://192.168.1.128/api/notes/send-note';
+  static const String apiUrl = 'http://192.168.1.223/api/notes/send-note';
 
   // ✅ Secure storage
   final storage = const FlutterSecureStorage();

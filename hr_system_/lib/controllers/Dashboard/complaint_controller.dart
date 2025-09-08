@@ -14,7 +14,7 @@ class ComplaintController extends GetxController {
   var error = RxnString();
 
   static const String apiUrl =
-      'http://192.168.1.128/api/complaints/send-complaint';
+      'http://192.168.1.223/api/complaints/send-complaint';
 
   final storage = const FlutterSecureStorage();
 

@@ -11,7 +11,7 @@ class OvertimeListController extends GetxController {
   var overtimeRequests = <OvertimeModel>[].obs;
 
   static const String apiUrl =
-      'http://192.168.1.128/api/overtime/employee/overtime-list';
+      'http://192.168.1.223/api/overtime/employee/overtime-list';
 
   // ✅ Secure storage
   final storage = const FlutterSecureStorage();
@@ -46,7 +46,7 @@ class OvertimeListController extends GetxController {
 
   Future<void> deleteRequest(String overtimeId) async {
     final token = await storage.read(key: 'auth_token') ?? '';
-    final url = 'http://192.168.1.128/api/overtime/employee/delete/$overtimeId';
+    final url = 'http://192.168.1.223/api/overtime/employee/delete/$overtimeId';
 
     try {
       final response = await http.delete(

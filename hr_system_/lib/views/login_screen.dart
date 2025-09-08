@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:hr_system_/views/after%20login/change_password_screen.dart';
-import 'package:hr_system_/views/home_screen.dart';
+import 'package:hr_system_/views/non_employee_home_page.dart';
+import 'package:hr_system_/views/signup_page.dart';
 import '../controllers/login_controller.dart';
-import '../models/login_model.dart';
-import 'forgetpass/forget_password_screen.dart';
+import '../views/home_screen.dart';
+import '../views/after login/change_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,13 +15,10 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen>
     with SingleTickerProviderStateMixin {
-  final _idController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final LoginController _controller = Get.put(LoginController());
-
+  final LoginController _controller = LoginController();
   bool _obscurePassword = true;
+  bool _isLoading = false;
   bool _visible = false;
-
   late AnimationController _animationController;
   late Animation<Offset> _slideAnimation;
 
@@ -45,53 +42,33 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Future<void> _attemptLogin() async {
-    _controller.isLoading.value = true;
+    setState(() => _isLoading = true);
 
-    final loginData = LoginModel(
-      userName: _idController.text.trim(),
-      password: _passwordController.text,
-    );
+    final result = await _controller.login();
 
-    final success = await _controller.login(loginData);
+    setState(() => _isLoading = false);
 
-    _controller.isLoading.value = false;
-
-    if (success) {
-      if (_controller.isFirstLogin.value) {
+    if (result.success) {
+      if (result.isFirstLogin && result.role?.toLowerCase() == "employee") {
         Get.offAll(
           () => ChangePasswordScreen(
-            token: _controller.token ?? "",
-            isFirstLogin: _controller.isFirstLogin.value,
+            token: result.token ?? "",
+            isFirstLogin: result.isFirstLogin,
           ),
         );
-      } else {
+      } else if (result.role?.toLowerCase() == "employee") {
         Get.offAll(() => const HomeScreen());
+      } else {
+        Get.offAll(() => const NonEmployeeHomeScreen());
       }
+    } else {
+      Get.snackbar(
+        "Error",
+        result.message,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.shade100,
+      );
     }
-  }
-
-  void _showAbout() {
-    showDialog(
-      context: context,
-      builder:
-          (_) => AlertDialog(
-            backgroundColor: Colors.white,
-            title: const Text(
-              "About Onset Way HR",
-              style: TextStyle(color: Colors.blue),
-            ),
-            content: const Text(
-              "Onset Way HR is a smart human resources platform.\n"
-              "It helps you manage attendance, requests, breaks, and track your performance easily.",
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text("OK"),
-              ),
-            ],
-          ),
-    );
   }
 
   @override
@@ -102,6 +79,7 @@ class _LoginScreenState extends State<LoginScreen>
       backgroundColor: Colors.blue,
       body: Stack(
         children: [
+          // خلفية فيها باترن
           Positioned.fill(
             child: Opacity(
               opacity: 0.90,
@@ -123,22 +101,10 @@ class _LoginScreenState extends State<LoginScreen>
                     child: AnimatedOpacity(
                       opacity: _visible ? 1.0 : 0.0,
                       duration: const Duration(milliseconds: 600),
-                      child: Obx(() => _buildLoginForm()),
+                      child: _buildLoginForm(),
                     ),
                   ),
                 ),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 24,
-            right: 20,
-            child: GestureDetector(
-              onTap: _showAbout,
-              child: Icon(
-                Icons.help_outline,
-                color: Colors.grey.shade700,
-                size: 26,
               ),
             ),
           ),
@@ -164,16 +130,16 @@ class _LoginScreenState extends State<LoginScreen>
         ),
         const SizedBox(height: 40),
         TextField(
-          controller: _idController,
+          controller: _controller.emailOrUserController,
           decoration: const InputDecoration(
-            labelText: "Employee ID",
-            prefixIcon: Icon(Icons.badge_outlined),
+            labelText: "Username or Email",
+            prefixIcon: Icon(Icons.account_circle_outlined),
             border: OutlineInputBorder(),
           ),
         ),
         const SizedBox(height: 20),
         TextField(
-          controller: _passwordController,
+          controller: _controller.passwordController,
           obscureText: _obscurePassword,
           decoration: InputDecoration(
             labelText: "Password",
@@ -187,28 +153,13 @@ class _LoginScreenState extends State<LoginScreen>
               },
             ),
             border: const OutlineInputBorder(),
-            errorText:
-                _controller.showError.value && !_controller.isFirstLogin.value
-                    ? _controller.lastErrorMessage
-                    : null,
           ),
         ),
-        const SizedBox(height: 8),
-        Align(
-          alignment: Alignment.centerRight,
-          child: TextButton(
-            onPressed: () => Get.to(() => ForgetPasswordScreen()),
-            child: const Text(
-              "Forgot Password?",
-              style: TextStyle(color: Colors.blue),
-            ),
-          ),
-        ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 24),
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: _controller.isLoading.value ? null : _attemptLogin,
+            onPressed: _isLoading ? null : _attemptLogin,
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.blue,
               foregroundColor: Colors.white,
@@ -218,8 +169,8 @@ class _LoginScreenState extends State<LoginScreen>
               ),
             ),
             child:
-                _controller.isLoading.value
-                    ? const CircularProgressIndicator()
+                _isLoading
+                    ? const CircularProgressIndicator(color: Colors.white)
                     : const Text(
                       "Login",
                       style: TextStyle(
@@ -227,6 +178,19 @@ class _LoginScreenState extends State<LoginScreen>
                         fontWeight: FontWeight.w600,
                       ),
                     ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        // رابط SignUp بخط صغير
+        GestureDetector(
+          onTap: () => Get.to(() => const NonEmployeeSignUpPage()),
+          child: const Text(
+            "Sign Up",
+            style: TextStyle(
+              fontSize: 13,
+              color: Colors.blue,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
         const SizedBox(height: 150),

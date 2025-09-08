@@ -14,7 +14,7 @@ class SalaryAdvanceController extends GetxController {
   var error = RxnString();
 
   static const String apiUrl =
-      'http://192.168.1.128/api/SalaryAdvance/send-request';
+      'http://192.168.1.223/api/SalaryAdvance/send-request';
 
   // ✅ Secure storage
   final storage = const FlutterSecureStorage();

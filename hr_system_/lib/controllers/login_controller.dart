@@ -1,157 +1,96 @@
 import 'dart:convert';
-import 'package:get/get.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import '../models/login_model.dart';
-import '../views/after login/change_password_screen.dart';
-import '../views/home_screen.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 
-class LoginController extends GetxController {
-  var loginAttempts = 0.obs;
-  var showError = false.obs;
-  var isLoading = false.obs;
-  var isFirstLogin = false.obs;
+class LoginResult {
+  final bool success;
+  final String message;
+  final bool isFirstLogin;
+  final String? token;
+  final String? role;
 
-  String? lastErrorMessage;
-  String? userRole;
-  String? token;
-  String? employeeId;
-  String? userId;
+  LoginResult({
+    required this.success,
+    required this.message,
+    this.isFirstLogin = false,
+    this.token,
+    this.role,
+  });
+}
 
-  final storage = const FlutterSecureStorage();
+class LoginController {
+  final emailOrUserController = TextEditingController();
+  final passwordController = TextEditingController();
 
-  Future<bool> login(LoginModel model) async {
-    isLoading.value = true;
+  final _secureStorage = const FlutterSecureStorage();
 
-    final url = Uri.parse('http://192.168.1.128/api/Auth/login');
+  void dispose() {
+    emailOrUserController.dispose();
+    passwordController.dispose();
+  }
+
+  Future<LoginResult> login() async {
+    final input = emailOrUserController.text.trim(); // Username أو Email
+    final password = passwordController.text.trim();
+
+    if (input.isEmpty || password.isEmpty) {
+      return LoginResult(success: false, message: "Please fill in all fields");
+    }
 
     try {
-      final res = await http.post(
-        url,
+      final response = await http.post(
+        Uri.parse('http://192.168.1.223/api/Auth/login'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(model.toJson()),
+        body: jsonEncode({'userName': input, 'password': password}),
       );
 
-      print('API response: ${res.body}');
-      isLoading.value = false;
-
-      if (res.statusCode == 200) {
-        final data = jsonDecode(res.body);
-        token = data['token'];
-        isFirstLogin.value = data['isFirstLogin'] ?? false;
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final token = data['token'];
+        final isFirstLogin = data['isFirstLogin'] ?? false;
 
         String? role;
-        bool isEmployee = false;
-
-        if (token != null && token!.isNotEmpty) {
-          final decodedToken = JwtDecoder.decode(token!);
-
-          final roleData =
+        if (token != null) {
+          final decodedToken = JwtDecoder.decode(token);
+          role =
               decodedToken['role'] ??
               decodedToken['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ??
               decodedToken['roles'];
-
-          // Extract role
-          if (roleData is List) {
-            isEmployee = roleData
-                .map((e) => e.toString().toLowerCase())
-                .contains('employee');
-            role =
-                isEmployee
-                    ? 'Employee'
-                    : (roleData.isNotEmpty ? roleData.first.toString() : null);
-          } else if (roleData is String) {
-            isEmployee = roleData.toLowerCase() == 'employee';
-            role = roleData;
-          }
-
-          // Extract employeeId
-          employeeId =
-              decodedToken['CompanyId'] ??
-              decodedToken['employeeCode'] ??
-              decodedToken['userName'] ??
-              data['CompanyId'] ??
-              data['employeeCode'] ??
-              data['userName'] ??
-              model.userName;
-
-          // Extract userId
-          userId =
-              decodedToken['userId'] ??
-              decodedToken['nameid'] ??
-              decodedToken['sub'] ??
-              data['userId'];
         }
 
-        userRole = role;
-        print('User role: $userRole');
-        print('employeeId: $employeeId');
-        print('userId: $userId');
+        // ✅ تخزين التوكن
+        await _secureStorage.write(key: "auth_token", value: token);
 
-        if (!isEmployee) {
-          lastErrorMessage = "This app is only for employees.";
-          Get.snackbar("Error", lastErrorMessage!);
-          return false;
-        }
-
-        // ✅ Save token + ids securely
-        await storage.write(key: 'auth_token', value: token!);
-        await storage.write(
-          key: 'employee_id',
-          value: employeeId ?? model.userName,
+        return LoginResult(
+          success: true,
+          message: "Login successful",
+          token: token,
+          isFirstLogin: isFirstLogin,
+          role: role,
         );
-        if (userId != null && userId!.isNotEmpty) {
-          await storage.write(key: 'user_id', value: userId!);
-        }
-
-        // ✅ Navigation flow
-        if (isFirstLogin.value) {
-          // First login → must change password
-          Get.offAll(
-            () => ChangePasswordScreen(
-              token: token!,
-              isFirstLogin: isFirstLogin.value,
-            ),
-          );
-        } else {
-          // Not first login → go directly to Home ✅
-          Get.offAll(() => const HomeScreen());
-        }
-
-        loginAttempts.value = 0;
-        showError.value = false;
-        lastErrorMessage = null;
-        return true;
-      } else if (res.statusCode == 401 || res.statusCode == 400) {
-        loginAttempts.value++;
-        showError.value = true;
-        lastErrorMessage = "Your password is incorrect.";
-        if (loginAttempts.value >= 3) {
-          lastErrorMessage =
-              "You've entered the wrong password 3 times.\nA verification link has been sent to your email to reset your password.";
-        }
-        Get.snackbar("Error", lastErrorMessage ?? "");
-        return false;
       } else {
-        loginAttempts.value++;
-        showError.value = true;
-        lastErrorMessage = "Something went wrong, please try again!";
-        Get.snackbar("Error", lastErrorMessage ?? "");
-        return false;
+        return LoginResult(
+          success: false,
+          message: "Error: ${response.statusCode} - ${response.body}",
+        );
       }
     } catch (e) {
-      isLoading.value = false;
-      lastErrorMessage = "Network error: $e";
-      Get.snackbar("Error", lastErrorMessage ?? "");
-      print("LOGIN EXCEPTION: $e");
-      return false;
+      return LoginResult(
+        success: false,
+        message: "Could not connect to the server",
+      );
     }
   }
 
-  void resetLoginAttempts() {
-    loginAttempts.value = 0;
-    showError.value = false;
-    lastErrorMessage = null;
+  /// ✅ دالة لاسترجاع التوكن
+  Future<String?> getToken() async {
+    return await _secureStorage.read(key: "auth_token");
+  }
+
+  /// ✅ دالة لمسح التوكن (logout)
+  Future<void> logout() async {
+    await _secureStorage.delete(key: "auth_token");
   }
 }

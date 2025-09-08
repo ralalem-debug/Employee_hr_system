@@ -4,7 +4,7 @@ import 'package:hr_system_/models/Dashboard/partial_leave_list.dart';
 import 'package:http/http.dart' as http;
 
 class PartialLeaveListController {
-  static const String BASE_HOST = '192.168.1.128';
+  static const String BASE_HOST = '192.168.1.223';
   static const Duration _timeout = Duration(seconds: 20);
 
   Map<String, String> _headers(String jwt) => {

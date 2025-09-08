@@ -1,8 +1,15 @@
+// lib/models/login_model.dart
 class LoginModel {
-  final String userName;
-  final String password;
+  String userNameOrEmail;
+  String password;
 
-  LoginModel({required this.userName, required this.password});
+  LoginModel({required this.userNameOrEmail, required this.password});
 
-  Map<String, dynamic> toJson() => {'userName': userName, 'password': password};
+  Map<String, dynamic> toJson() {
+    return {
+      // إذا الـ API بدها userName حتى لو كان ايميل، خلينا الحقل userName
+      "userName": userNameOrEmail,
+      "password": password,
+    };
+  }
 }
