@@ -41,7 +41,7 @@ class SettingsScreen extends StatelessWidget {
     final ProfileController profileController = Get.put(ProfileController());
     profileController.fetchProfile();
     return Scaffold(
-      backgroundColor: Colors.blue,
+      backgroundColor: const Color.fromARGB(255, 8, 112, 197),
       body: Obx(() {
         final profile = profileController.profile.value;
 
@@ -70,7 +70,6 @@ class SettingsScreen extends StatelessWidget {
                 ),
                 child: ListView(
                   children: [
-                    // اسم المستخدم وإيميله
                     ListTile(
                       title: Text(
                         profile?.fullNameE ?? "Loading...",
@@ -78,7 +77,7 @@ class SettingsScreen extends StatelessWidget {
                       ),
                       subtitle: Text(profile?.email ?? "Loading..."),
                       leading: const CircleAvatar(
-                        backgroundColor: Colors.blue,
+                        backgroundColor: Color.fromARGB(255, 7, 99, 173),
                         child: Icon(Icons.person, color: Colors.white),
                       ),
                     ),
@@ -100,7 +99,7 @@ class SettingsScreen extends StatelessWidget {
                       onTap: () {
                         Get.to(
                           () => ChangePasswordScreen(
-                            token: "", // مرر التوكن من الكنترولر
+                            token: "", //for token
                             isFirstLogin: false,
                           ),
                         );
@@ -164,7 +163,7 @@ class SettingsScreen extends StatelessWidget {
           ],
         );
       }),
-      bottomNavigationBar: const CustomNavBar(currentIndex: 3), // ✅ Tab notify
+      bottomNavigationBar: const CustomNavBar(currentIndex: 3),
     );
   }
 }

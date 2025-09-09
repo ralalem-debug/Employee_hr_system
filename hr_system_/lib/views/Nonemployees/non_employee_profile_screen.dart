@@ -218,7 +218,7 @@ class _NonEmployeeProfileScreenState extends State<NonEmployeeProfileScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      "Curriculum Vitae (CV)",
+                      "CV",
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,

@@ -1,5 +1,4 @@
 class NonEmployeeProfile {
-  final String nonEmployeeId;
   final String fullNameE;
   final String fullNameA;
   final String gender;
@@ -9,7 +8,6 @@ class NonEmployeeProfile {
   final String cvUrl;
 
   NonEmployeeProfile({
-    required this.nonEmployeeId,
     required this.fullNameE,
     required this.fullNameA,
     required this.gender,
@@ -19,31 +17,15 @@ class NonEmployeeProfile {
     required this.cvUrl,
   });
 
-  /// 🔹 تحويل JSON → Model
   factory NonEmployeeProfile.fromJson(Map<String, dynamic> json) {
     return NonEmployeeProfile(
-      nonEmployeeId: json["nonEmployeeId"] ?? "",
-      fullNameE: json["fullNameE"] ?? "",
-      fullNameA: json["fullNameA"] ?? "",
-      gender: json["gender"] ?? "",
-      city: json["city"] ?? "",
-      email: json["email"] ?? "",
-      phone: json["phoneNumber"] ?? "",
-      cvUrl: json["cvUrl"] ?? "",
+      fullNameE: json['fullNameE'] ?? "",
+      fullNameA: json['fullNameA'] ?? "",
+      gender: json['gender'] ?? "",
+      city: json['city'] ?? "",
+      email: json['email'] ?? "",
+      phone: json['phoneNumber'] ?? "",
+      cvUrl: json['cvUrl'] ?? json['cv'] ?? "",
     );
-  }
-
-  /// 🔹 تحويل Model → JSON (مفيد لو احتجت تبعته)
-  Map<String, dynamic> toJson() {
-    return {
-      "nonEmployeeId": nonEmployeeId,
-      "fullNameE": fullNameE,
-      "fullNameA": fullNameA,
-      "gender": gender,
-      "city": city,
-      "email": email,
-      "phoneNumber": phone,
-      "cvUrl": cvUrl,
-    };
   }
 }
