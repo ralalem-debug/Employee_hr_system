@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hr_system_/views/Nonemployees/non_employee_home_page.dart';
+import 'package:hr_system_/views/Nonemployees/non_employee_notifications_screen.dart';
 import 'package:hr_system_/views/Nonemployees/non_employee_profile_screen.dart';
 
 class CustomNavBar extends StatelessWidget {
@@ -17,7 +18,8 @@ class CustomNavBar extends StatelessWidget {
         Get.snackbar("Coming Soon", "Jobs page is under development");
         break;
       case 2:
-        Get.snackbar("Coming Soon", "Notifications page is under development");
+        Get.offAll(() => const NotificationsScreen());
+
         break;
       case 3:
         Get.offAll(() => const NonEmployeeProfileScreen());
