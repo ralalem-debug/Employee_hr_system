@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hr_system_/views/Nonemployees/non_employee_home_page.dart';
 import 'package:hr_system_/views/Nonemployees/non_employee_notifications_screen.dart';
-import 'package:hr_system_/views/Nonemployees/non_employee_profile_screen.dart';
+import 'package:hr_system_/views/Nonemployees/settings.dart';
 
 class CustomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -22,7 +22,7 @@ class CustomNavBar extends StatelessWidget {
 
         break;
       case 3:
-        Get.offAll(() => const NonEmployeeProfileScreen());
+        Get.offAll(() => const SettingsScreen());
 
         break;
     }
