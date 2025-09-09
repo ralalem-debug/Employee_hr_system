@@ -49,7 +49,7 @@ class SettingsScreen extends StatelessWidget {
           children: [
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
+              padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 20),
               child: const Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [],
@@ -130,7 +130,7 @@ class SettingsScreen extends StatelessWidget {
                     const Divider(),
 
                     // Logout
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 20),
 
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
