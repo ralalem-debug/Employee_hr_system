@@ -2,7 +2,13 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:hr_system_/controllers/nonemployee_profile_controller.dart';
+import 'package:hr_system_/views/Nonemployees/non_employee_home_page.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:http/http.dart' as http;
+
+import '../../controllers/nonemployee_profile_controller.dart'
+    show ProfileController;
 
 class NonEmployeeProfileScreen extends StatefulWidget {
   const NonEmployeeProfileScreen({super.key});
@@ -44,28 +50,120 @@ class _NonEmployeeProfileScreenState extends State<NonEmployeeProfileScreen> {
     return InputDecoration(
       labelText: label,
       prefixIcon: Icon(icon, color: Colors.blue),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      filled: true,
+      fillColor: Colors.grey.shade50,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
     );
+  }
+
+  /// ✅ فتح CV
+  Future<void> _openCV(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      Get.snackbar("Error", "Could not open CV");
+    }
+  }
+
+  /// ✅ تحميل CV
+  Future<void> _downloadCV(String url) async {
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final dir = await getApplicationDocumentsDirectory();
+        final file = File("${dir.path}/${url.split('/').last}");
+        await file.writeAsBytes(response.bodyBytes);
+        Get.snackbar("Success", "CV downloaded: ${file.path}");
+      } else {
+        Get.snackbar("Error", "Failed to download CV");
+      }
+    } catch (e) {
+      Get.snackbar("Error", "Download error: $e");
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
-        title: const Text("My Profile"),
-        backgroundColor: Colors.blue,
-        elevation: 0,
+        backgroundColor: Colors.grey.shade100,
+
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back,
+            color: Color.fromARGB(255, 0, 0, 0),
+          ),
+          onPressed: () => Get.offAll(() => const NonEmployeeHomeScreen()),
+        ),
       ),
       body: Obx(() {
         if (_c.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
         }
 
+        final p = _c.profile.value;
+
         return SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Column(
             children: [
+              /// 🔹 الهيدر
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.blue.shade400, Colors.blue.shade700],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    const CircleAvatar(
+                      radius: 35,
+                      backgroundColor: Colors.white,
+                      child: Icon(Icons.person, size: 40, color: Colors.blue),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            p?.fullNameE ?? "",
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            p?.email ?? "",
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.white70,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              /// 🔹 الحقول
               TextField(
                 controller: fullNameE,
                 decoration: _inputStyle("Full Name (English)", Icons.person),
@@ -100,49 +198,85 @@ class _NonEmployeeProfileScreenState extends State<NonEmployeeProfileScreen> {
               ),
               const SizedBox(height: 20),
 
-              // CV upload
-              InkWell(
-                onTap: () async {
-                  FilePickerResult? result =
-                      await FilePicker.platform.pickFiles();
-                  if (result != null) {
-                    setState(() {
-                      cvFile = File(result.files.single.path!);
-                    });
-                  }
-                },
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 14,
-                    horizontal: 16,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.shade50,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.blue),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.upload_file, color: Colors.blue),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          cvFile == null
-                              ? "Upload CV"
-                              : "Selected: ${cvFile!.path.split('/').last}",
-                          style: const TextStyle(fontSize: 14),
-                          overflow: TextOverflow.ellipsis,
-                        ),
+              /// 🔹 CV Section
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.blue.shade100),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 6,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Curriculum Vitae (CV)",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 10),
+
+                    if ((p?.cvUrl ?? "").isNotEmpty)
+                      Row(
+                        children: [
+                          const Icon(Icons.description, color: Colors.blue),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              "Current CV: ${p!.cvUrl.split('/').last}",
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () => _openCV(p.cvUrl),
+                            child: const Text("Open"),
+                          ),
+                          TextButton(
+                            onPressed: () => _downloadCV(p.cvUrl),
+                            child: const Text("Download"),
+                          ),
+                        ],
+                      ),
+
+                    const SizedBox(height: 10),
+
+                    ElevatedButton.icon(
+                      onPressed: () async {
+                        FilePickerResult? result =
+                            await FilePicker.platform.pickFiles();
+                        if (result != null) {
+                          setState(() {
+                            cvFile = File(result.files.single.path!);
+                          });
+                        }
+                      },
+                      icon: const Icon(Icons.upload_file),
+                      label: Text(
+                        cvFile == null
+                            ? "Upload New CV"
+                            : "Selected: ${cvFile!.path.split('/').last}",
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                      ),
+                    ),
+                  ],
                 ),
               ),
 
               const SizedBox(height: 30),
 
-              // Save Button
+              /// 🔹 Save Button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(

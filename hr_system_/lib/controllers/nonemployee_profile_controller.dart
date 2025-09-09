@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -7,7 +9,7 @@ import 'package:hr_system_/models/non_employee.dart/nonemployee_profile.dart';
 
 class ProfileController extends GetxController {
   var isLoading = false.obs;
-  var profile = Rxn<NonEmployeeProfile>(); // ✅ Getter profile موجود
+  var profile = Rxn<NonEmployeeProfile>();
 
   final storage = const FlutterSecureStorage();
   final baseUrl = "http://192.168.1.223";
@@ -18,7 +20,7 @@ class ProfileController extends GetxController {
     final token = await storage.read(key: "auth_token");
 
     if (token == null) {
-      Get.snackbar("Error", "No token found. Please login again.");
+      _showSnackbar("Error", "No token found. Please login again.", Colors.red);
       isLoading.value = false;
       return;
     }
@@ -36,10 +38,14 @@ class ProfileController extends GetxController {
         final data = jsonDecode(res.body);
         profile.value = NonEmployeeProfile.fromJson(data);
       } else {
-        Get.snackbar("Error", "Failed to load profile (${res.statusCode})");
+        _showSnackbar(
+          "Error",
+          "Failed to load profile (${res.statusCode})",
+          Colors.red,
+        );
       }
     } catch (e) {
-      Get.snackbar("Error", "Network error: $e");
+      _showSnackbar("Error", "Network error: $e", Colors.red);
     } finally {
       isLoading.value = false;
     }
@@ -59,7 +65,7 @@ class ProfileController extends GetxController {
     final token = await storage.read(key: "auth_token");
 
     if (token == null) {
-      Get.snackbar("Error", "No token found. Please login again.");
+      _showSnackbar("Error", "No token found. Please login again.", Colors.red);
       isLoading.value = false;
       return;
     }
@@ -89,19 +95,39 @@ class ProfileController extends GetxController {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(body);
+
+        // نحدث البيانات بالرد
         profile.value = NonEmployeeProfile.fromJson(data);
-        Get.snackbar("Success", "Profile updated successfully!");
+
+        // نرجع نجيب البروفايل لضمان تحديث الـ CV وغيره
+        await fetchProfile();
+
+        _showSnackbar("Success", "Profile updated successfully!", Colors.green);
       } else {
-        Get.snackbar(
+        _showSnackbar(
           "Error",
           "Failed to update profile (${response.statusCode})",
+          Colors.red,
         );
         print("❌ Response: $body");
       }
     } catch (e) {
-      Get.snackbar("Error", "Network error: $e");
+      _showSnackbar("Error", "Network error: $e", Colors.red);
     } finally {
       isLoading.value = false;
     }
+  }
+
+  /// 🔹 Snackbar ملونة
+  void _showSnackbar(String title, String message, Color color) {
+    Get.snackbar(
+      title,
+      message,
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: color.withOpacity(0.2),
+      colorText: Colors.black87,
+      margin: const EdgeInsets.all(12),
+      borderRadius: 8,
+    );
   }
 }
