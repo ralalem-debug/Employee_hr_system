@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hr_system_/controllers/nonemployee_profile_controller.dart';
+import 'package:hr_system_/views/Nonemployees/custom_nav_bar.dart';
 import 'package:hr_system_/views/Nonemployees/non_employee_profile_screen.dart';
 import 'package:hr_system_/views/after login/change_password_screen.dart';
 import 'package:hr_system_/controllers/login_controller.dart';
@@ -39,7 +40,6 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final ProfileController profileController = Get.put(ProfileController());
     profileController.fetchProfile();
-
     return Scaffold(
       backgroundColor: Colors.blue,
       body: Obx(() {
@@ -47,13 +47,18 @@ class SettingsScreen extends StatelessWidget {
 
         return Column(
           children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 20),
-              child: const Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [],
-              ),
+            // 🔹 الهيدر الأزرق
+            Stack(
+              children: [
+                // خلفية الهيدر
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 60,
+                    horizontal: 20,
+                  ),
+                ),
+              ],
             ),
 
             // Body
@@ -130,7 +135,7 @@ class SettingsScreen extends StatelessWidget {
                     const Divider(),
 
                     // Logout
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 10),
 
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -138,7 +143,7 @@ class SettingsScreen extends StatelessWidget {
                         onPressed: () {
                           final loginController = Get.put(LoginController());
                           loginController.logout();
-                          Get.offAllNamed("/login"); // يرجع لصفحة اللوجن
+                          Get.offAllNamed("/login");
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red.shade100,
@@ -159,6 +164,7 @@ class SettingsScreen extends StatelessWidget {
           ],
         );
       }),
+      bottomNavigationBar: const CustomNavBar(currentIndex: 3), // ✅ Tab notify
     );
   }
 }
