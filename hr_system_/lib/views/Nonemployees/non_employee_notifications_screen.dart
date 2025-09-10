@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:hr_system_/controllers/non_employee_notifications_controller.dart';
 import 'package:hr_system_/models/non_employee.dart/notification_model.dart';
 import 'package:hr_system_/views/Nonemployees/custom_nav_bar.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -68,6 +69,28 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     style: const TextStyle(fontSize: 14, color: Colors.black87),
                   ),
                   const SizedBox(height: 8),
+
+                  if (n.url.isNotEmpty)
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton.icon(
+                        onPressed: () async {
+                          final Uri uri = Uri.parse(n.url);
+                          if (await canLaunchUrl(uri)) {
+                            await launchUrl(
+                              uri,
+                              mode: LaunchMode.externalApplication,
+                            );
+                          }
+                        },
+                        icon: const Icon(Icons.link, color: Colors.blue),
+                        label: const Text(
+                          "Join Meeting",
+                          style: TextStyle(color: Colors.blue),
+                        ),
+                      ),
+                    ),
+
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [

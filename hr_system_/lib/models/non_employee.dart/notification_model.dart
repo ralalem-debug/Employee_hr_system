@@ -4,6 +4,7 @@ class NotificationModel {
   final String message;
   final bool isRead;
   final String createdAt;
+  final String url;
 
   NotificationModel({
     required this.notificationId,
@@ -11,6 +12,7 @@ class NotificationModel {
     required this.message,
     required this.isRead,
     required this.createdAt,
+    required this.url,
   });
 
   factory NotificationModel.fromJson(Map<String, dynamic> json) {
@@ -20,6 +22,7 @@ class NotificationModel {
       message: json['message'] ?? "",
       isRead: json['isRead'] ?? false,
       createdAt: json['createdAt'] ?? "",
+      url: json['url'] ?? "",
     );
   }
 }

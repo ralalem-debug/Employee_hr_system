@@ -113,12 +113,16 @@ class SettingsScreen extends StatelessWidget {
                     _buildListTile(
                       title: "About us",
                       icon: Icons.info,
-                      onTap: () {},
+                      onTap: () {
+                        Get.toNamed('/aboutus');
+                      },
                     ),
                     _buildListTile(
                       title: "Privacy policy",
                       icon: Icons.privacy_tip_outlined,
-                      onTap: () {},
+                      onTap: () {
+                        Get.toNamed('/privacypolicy');
+                      },
                     ),
                     _buildListTile(
                       title: "Terms and conditions",
