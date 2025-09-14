@@ -18,7 +18,7 @@ class ProfileController extends GetxController {
   var isLoading = false.obs;
   var error = RxnString();
 
-  final String baseUrl = "http://192.168.1.223";
+  final String baseUrl = "http://192.168.1.158";
 
   // ✅ Secure storage
   final storage = const FlutterSecureStorage();

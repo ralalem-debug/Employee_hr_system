@@ -18,7 +18,7 @@ class SignatureUploadController extends GetxController {
       final token = await storage.read(key: 'auth_token');
 
       final uri = Uri.parse(
-        "http://192.168.1.223/api/employee/upload-signature",
+        "http://192.168.1.158/api/employee/upload-signature",
       );
       final req = http.MultipartRequest('POST', uri);
 

@@ -8,7 +8,7 @@ class ForgetPasswordController extends GetxController {
 
   Future<bool> sendCode(String email) async {
     isLoading.value = true;
-    final url = Uri.parse("http://192.168.1.223/api/Auth/forgot-password");
+    final url = Uri.parse("http://192.168.1.158/api/Auth/forgot-password");
     final res = await http.post(
       url,
       headers: {"Content-Type": "application/json"},

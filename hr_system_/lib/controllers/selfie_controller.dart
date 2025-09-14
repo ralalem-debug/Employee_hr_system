@@ -38,7 +38,7 @@ class SelfieController extends GetxController {
         fileToSend = await compressImage(imageFile);
       }
 
-      final uri = Uri.parse("http://192.168.1.223/api/employee/upload-selfie");
+      final uri = Uri.parse("http://192.168.1.158/api/employee/upload-selfie");
       final req = http.MultipartRequest('POST', uri);
 
       req.files.add(await http.MultipartFile.fromPath('file', fileToSend.path));

@@ -100,7 +100,7 @@ class LeaveRequestController {
     }
 
     final url = Uri.parse(
-      'http://192.168.1.223/api/employee/request-partial-day-leave',
+      'http://192.168.1.158/api/employee/request-partial-day-leave',
     );
 
     try {

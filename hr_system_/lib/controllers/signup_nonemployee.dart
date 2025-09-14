@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 
 class NonEmployeeController extends GetxController {
   var isLoading = false.obs;
-  String baseUrl = "http://192.168.1.223/api/nonemployees";
+  String baseUrl = "http://192.168.1.158/api/nonemployees";
 
   Future<bool> signUp(NonEmployeeSignUpModel model) async {
     isLoading.value = true;

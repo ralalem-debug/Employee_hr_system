@@ -9,7 +9,7 @@ class NotificationController extends GetxController {
   var notifications = <NotificationModel>[].obs;
 
   final storage = const FlutterSecureStorage();
-  final baseUrl = "http://192.168.1.223";
+  final baseUrl = "http://192.168.1.158";
 
   Future<void> fetchNotifications() async {
     isLoading.value = true;

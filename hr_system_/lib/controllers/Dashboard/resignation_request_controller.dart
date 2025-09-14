@@ -15,7 +15,7 @@ class ResignationRequestController extends GetxController {
   var error = RxnString();
 
   static const String apiUrl =
-      'http://192.168.1.223/api/resignations/send-resignation';
+      'http://192.168.1.158/api/resignations/send-resignation';
 
   // ✅ Secure storage
   final storage = const FlutterSecureStorage();

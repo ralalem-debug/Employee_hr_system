@@ -10,8 +10,8 @@ class NotesListController extends GetxController {
   var isLoading = false.obs;
   var error = RxnString();
 
-  static const String getUrl = 'http://192.168.1.223/api/notes/Employee-notes';
-  static const String deleteUrl = 'http://192.168.1.223/api/notes/delete/';
+  static const String getUrl = 'http://192.168.1.158/api/notes/Employee-notes';
+  static const String deleteUrl = 'http://192.168.1.158/api/notes/delete/';
 
   // ✅ Secure storage
   final storage = const FlutterSecureStorage();

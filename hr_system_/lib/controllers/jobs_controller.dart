@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class JobsController extends GetxController {
-  final String baseUrl = "http://192.168.1.223";
+  final String baseUrl = "http://192.168.1.158";
   final _storage = const FlutterSecureStorage();
 
   var isLoading = false.obs;

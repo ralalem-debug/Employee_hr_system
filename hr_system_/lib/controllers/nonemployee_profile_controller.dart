@@ -12,7 +12,7 @@ class ProfileController extends GetxController {
   var profile = Rxn<NonEmployeeProfile>();
 
   final storage = const FlutterSecureStorage();
-  final baseUrl = "http://192.168.1.223";
+  final baseUrl = "http://192.168.1.158";
 
   /// 🔹 جلب بيانات البروفايل
   Future<void> fetchProfile() async {

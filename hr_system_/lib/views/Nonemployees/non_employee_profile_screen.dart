@@ -30,6 +30,9 @@ class _NonEmployeeProfileScreenState extends State<NonEmployeeProfileScreen> {
 
   File? cvFile;
 
+  final String cvDownloadUrl =
+      "http://192.168.1.223/api/nonemployees/download-my-cv"; // 🔹 API ثابت لتحميل CV
+
   @override
   void initState() {
     super.initState();
@@ -58,8 +61,8 @@ class _NonEmployeeProfileScreenState extends State<NonEmployeeProfileScreen> {
   }
 
   /// ✅ فتح CV
-  Future<void> _openCV(String url) async {
-    final uri = Uri.parse(url);
+  Future<void> _openCV() async {
+    final uri = Uri.parse(cvDownloadUrl);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
@@ -68,12 +71,17 @@ class _NonEmployeeProfileScreenState extends State<NonEmployeeProfileScreen> {
   }
 
   /// ✅ تحميل CV
-  Future<void> _downloadCV(String url) async {
+  Future<void> _downloadCV() async {
     try {
-      final response = await http.get(Uri.parse(url));
+      final token = await _c.storage.read(key: "auth_token");
+      final response = await http.get(
+        Uri.parse(cvDownloadUrl),
+        headers: {"Authorization": "Bearer $token"},
+      );
+
       if (response.statusCode == 200) {
         final dir = await getApplicationDocumentsDirectory();
-        final file = File("${dir.path}/${url.split('/').last}");
+        final file = File("${dir.path}/my_cv.pdf");
         await file.writeAsBytes(response.bodyBytes);
         Get.snackbar("Success", "CV downloaded: ${file.path}");
       } else {
@@ -90,12 +98,9 @@ class _NonEmployeeProfileScreenState extends State<NonEmployeeProfileScreen> {
       backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
         backgroundColor: Colors.grey.shade100,
-
+        elevation: 0,
         leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
-            color: Color.fromARGB(255, 0, 0, 0),
-          ),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Get.offAll(() => const NonEmployeeHomeScreen()),
         ),
       ),
@@ -226,27 +231,21 @@ class _NonEmployeeProfileScreenState extends State<NonEmployeeProfileScreen> {
                     ),
                     const SizedBox(height: 10),
 
-                    if ((p?.cvUrl ?? "").isNotEmpty)
-                      Row(
-                        children: [
-                          const Icon(Icons.description, color: Colors.blue),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              "Current CV: ${p!.cvUrl.split('/').last}",
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () => _openCV(p.cvUrl),
-                            child: const Text("Open"),
-                          ),
-                          TextButton(
-                            onPressed: () => _downloadCV(p.cvUrl),
-                            child: const Text("Download"),
-                          ),
-                        ],
-                      ),
+                    Row(
+                      children: [
+                        const Icon(Icons.description, color: Colors.blue),
+                        const SizedBox(width: 8),
+                        const Expanded(child: Text("Your uploaded CV")),
+                        TextButton(
+                          onPressed: _openCV,
+                          child: const Text("Open"),
+                        ),
+                        TextButton(
+                          onPressed: _downloadCV,
+                          child: const Text("Download"),
+                        ),
+                      ],
+                    ),
 
                     const SizedBox(height: 10),
 

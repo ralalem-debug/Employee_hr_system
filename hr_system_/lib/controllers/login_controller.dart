@@ -41,7 +41,7 @@ class LoginController {
 
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.1.223/api/Auth/login'),
+        Uri.parse('http://192.168.1.158/api/Auth/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'userName': input, 'password': password}),
       );
