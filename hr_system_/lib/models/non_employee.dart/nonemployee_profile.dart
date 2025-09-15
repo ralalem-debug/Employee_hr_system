@@ -5,7 +5,7 @@ class NonEmployeeProfile {
   final String city;
   final String email;
   final String phone;
-  final String cvUrl;
+  final String cvUrl; // ✅ رابط الـ CV
 
   NonEmployeeProfile({
     required this.fullNameE,
@@ -25,7 +25,13 @@ class NonEmployeeProfile {
       city: json['city'] ?? "",
       email: json['email'] ?? "",
       phone: json['phoneNumber'] ?? "",
-      cvUrl: json['cvUrl'] ?? json['cv'] ?? "",
+      cvUrl: json['cvUrl'] ?? "",
     );
+  }
+
+  /// ✅ دالة لإرجاع اسم الملف فقط بدل الرابط الطويل
+  String getCVFileName() {
+    if (cvUrl.isEmpty) return "No CV uploaded";
+    return cvUrl.split('/').last;
   }
 }

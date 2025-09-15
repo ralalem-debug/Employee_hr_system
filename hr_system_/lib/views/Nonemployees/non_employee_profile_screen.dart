@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:hr_system_/views/Nonemployees/non_employee_home_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:http/http.dart' as http;
 
 import '../../controllers/nonemployee_profile_controller.dart'
@@ -30,8 +31,7 @@ class _NonEmployeeProfileScreenState extends State<NonEmployeeProfileScreen> {
 
   File? cvFile;
 
-  final String cvDownloadUrl =
-      "http://192.168.1.223/api/nonemployees/download-my-cv"; // 🔹 API ثابت لتحميل CV
+  final String baseUrl = "http://192.168.1.158"; // ✅ العنوان الصحيح
 
   @override
   void initState() {
@@ -60,9 +60,17 @@ class _NonEmployeeProfileScreenState extends State<NonEmployeeProfileScreen> {
     );
   }
 
+  /// ✅ تجهيز رابط كامل للـ CV
+  String getFullCvUrl(String? cvPath) {
+    if (cvPath == null || cvPath.isEmpty) return "";
+    if (cvPath.startsWith("http")) return cvPath;
+    return "$baseUrl$cvPath";
+  }
+
   /// ✅ فتح CV
-  Future<void> _openCV() async {
-    final uri = Uri.parse(cvDownloadUrl);
+  Future<void> _openCV(String cvPath) async {
+    final url = getFullCvUrl(cvPath);
+    final uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
@@ -70,20 +78,46 @@ class _NonEmployeeProfileScreenState extends State<NonEmployeeProfileScreen> {
     }
   }
 
-  /// ✅ تحميل CV
-  Future<void> _downloadCV() async {
+  /// ✅ تحميل CV (ينزل في Downloads للأندرويد و Documents للـ iOS)
+  Future<void> _downloadCV(String cvPath) async {
     try {
-      final token = await _c.storage.read(key: "auth_token");
-      final response = await http.get(
-        Uri.parse(cvDownloadUrl),
-        headers: {"Authorization": "Bearer $token"},
-      );
+      final url = getFullCvUrl(cvPath);
+
+      // طلب صلاحية
+      if (Platform.isAndroid) {
+        var status = await Permission.storage.request();
+        if (!status.isGranted) {
+          Get.snackbar("Error", "Storage permission denied");
+          return;
+        }
+      }
+
+      final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
-        final dir = await getApplicationDocumentsDirectory();
-        final file = File("${dir.path}/my_cv.pdf");
+        String fileName = url.split('/').last;
+        Directory? dir;
+
+        if (Platform.isAndroid) {
+          dir = Directory("/storage/emulated/0/Download");
+        } else if (Platform.isIOS) {
+          dir = await getApplicationDocumentsDirectory();
+        }
+
+        if (dir == null) {
+          Get.snackbar("Error", "Could not find directory");
+          return;
+        }
+
+        final file = File("${dir.path}/$fileName");
         await file.writeAsBytes(response.bodyBytes);
-        Get.snackbar("Success", "CV downloaded: ${file.path}");
+
+        Get.snackbar(
+          "Success",
+          "CV downloaded to: ${file.path}",
+          snackPosition: SnackPosition.BOTTOM,
+          duration: const Duration(seconds: 4),
+        );
       } else {
         Get.snackbar("Error", "Failed to download CV");
       }
@@ -98,7 +132,6 @@ class _NonEmployeeProfileScreenState extends State<NonEmployeeProfileScreen> {
       backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
         backgroundColor: Colors.grey.shade100,
-        elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Get.offAll(() => const NonEmployeeHomeScreen()),
@@ -231,21 +264,27 @@ class _NonEmployeeProfileScreenState extends State<NonEmployeeProfileScreen> {
                     ),
                     const SizedBox(height: 10),
 
-                    Row(
-                      children: [
-                        const Icon(Icons.description, color: Colors.blue),
-                        const SizedBox(width: 8),
-                        const Expanded(child: Text("Your uploaded CV")),
-                        TextButton(
-                          onPressed: _openCV,
-                          child: const Text("Open"),
-                        ),
-                        TextButton(
-                          onPressed: _downloadCV,
-                          child: const Text("Download"),
-                        ),
-                      ],
-                    ),
+                    if ((p?.cvUrl ?? "").isNotEmpty)
+                      Row(
+                        children: [
+                          const Icon(Icons.description, color: Colors.blue),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              "Current CV: ${p!.cvUrl.split('/').last}",
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () => _openCV(p.cvUrl),
+                            child: const Text("Open"),
+                          ),
+                          TextButton(
+                            onPressed: () => _downloadCV(p.cvUrl),
+                            child: const Text("Download"),
+                          ),
+                        ],
+                      ),
 
                     const SizedBox(height: 10),
 
