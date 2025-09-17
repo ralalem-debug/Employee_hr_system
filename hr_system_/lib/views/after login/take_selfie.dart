@@ -14,34 +14,44 @@ class TakeSelfiePage extends StatefulWidget {
 }
 
 class _TakeSelfiePageState extends State<TakeSelfiePage> {
-  File? _selfie;
-  final controller = Get.put(SelfieController());
+  File? _frontSelfie;
+  File? _leftSelfie;
+  File? _rightSelfie;
 
-  // ✅ Secure storage
+  final controller = Get.put(SelfieController());
   final storage = const FlutterSecureStorage();
 
-  Future<void> _pickImage() async {
+  Future<void> _pickImage(String type) async {
     final picked = await ImagePicker().pickImage(
       source: ImageSource.camera,
       imageQuality: 85,
     );
-    if (picked != null) setState(() => _selfie = File(picked.path));
+    if (picked != null) {
+      setState(() {
+        if (type == "front") _frontSelfie = File(picked.path);
+        if (type == "left") _leftSelfie = File(picked.path);
+        if (type == "right") _rightSelfie = File(picked.path);
+      });
+    }
   }
 
   Future<void> _submit() async {
-    if (_selfie == null) {
-      Get.snackbar("Error", "Please take a selfie first");
+    if (_frontSelfie == null || _leftSelfie == null || _rightSelfie == null) {
+      Get.snackbar("Error", "Please take all 3 selfies first");
       return;
     }
 
-    // ✅ جلب التوكن من التخزين
     final token = await storage.read(key: 'auth_token') ?? '';
     if (token.isEmpty) {
       Get.snackbar("Error", "Missing token. Please login again.");
       return;
     }
 
-    bool success = await controller.uploadSelfie(_selfie!, token);
+    bool success = await controller.uploadSelfies([
+      _frontSelfie!,
+      _leftSelfie!,
+      _rightSelfie!,
+    ], token);
 
     if (success) {
       Get.offAll(() => const SignatureScreen());
@@ -83,7 +93,7 @@ class _TakeSelfiePageState extends State<TakeSelfiePage> {
                 ),
                 const SizedBox(height: 8),
 
-                // Warning message
+                // Warning
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(12),
@@ -113,7 +123,7 @@ class _TakeSelfiePageState extends State<TakeSelfiePage> {
 
                 const SizedBox(height: 18),
 
-                // Clear selfie instructions
+                // General instructions
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(
@@ -126,10 +136,11 @@ class _TakeSelfiePageState extends State<TakeSelfiePage> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Text(
-                    'Please take a clear selfie:\n\n'
-                    '1. Make sure your full face is visible.\n'
-                    '2. Look directly at the camera.\n'
-                    '3. No glasses or hats.',
+                    'Selfie Instructions:\n\n'
+                    '1. Take 3 photos (Front, Left, Right).\n'
+                    '2. Make sure your full face is visible.\n'
+                    '3. Look directly at the camera.\n'
+                    '4. No glasses or hats.',
                     style: TextStyle(
                       fontSize: 15,
                       color: Colors.blueAccent,
@@ -141,78 +152,121 @@ class _TakeSelfiePageState extends State<TakeSelfiePage> {
 
                 const SizedBox(height: 14),
 
-                // Selfie button
-                InkWell(
-                  onTap: controller.isLoading.value ? null : _pickImage,
-                  borderRadius: BorderRadius.circular(100),
-                  child: Container(
-                    width: 180,
-                    height: 180,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white,
-                      border: Border.all(color: Colors.blueAccent, width: 4),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.blue[700]!,
-                          blurRadius: 14,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child:
-                        _selfie != null
-                            ? ClipOval(
-                              child: Image.file(
-                                _selfie!,
-                                width: 170,
-                                height: 170,
-                                fit: BoxFit.cover,
-                              ),
-                            )
-                            : Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: const [
-                                Icon(
-                                  Icons.camera_alt_rounded,
-                                  size: 52,
-                                  color: Colors.blueAccent,
-                                ),
-                                SizedBox(height: 16),
-                                Text(
-                                  'Take Selfie',
-                                  style: TextStyle(
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                  ),
+                // Front Selfie
+                _buildSelfieSection(
+                  label: "Front Selfie",
+                  description: "Face directly to the camera.",
+                  file: _frontSelfie,
+                  onTap: () => _pickImage("front"),
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
+
+                // Left Selfie
+                _buildSelfieSection(
+                  label: "Left Side Selfie",
+                  description: "Turn your head to the left.",
+                  file: _leftSelfie,
+                  onTap: () => _pickImage("left"),
+                ),
+
+                const SizedBox(height: 20),
+
+                // Right Selfie
+                _buildSelfieSection(
+                  label: "Right Side Selfie",
+                  description: "Turn your head to the right.",
+                  file: _rightSelfie,
+                  onTap: () => _pickImage("right"),
+                ),
+
+                const SizedBox(height: 30),
 
                 controller.isLoading.value
                     ? const CircularProgressIndicator()
                     : ElevatedButton(
                       onPressed: controller.isLoading.value ? null : _submit,
-                      child: const Text("Continue"),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 40,
+                          vertical: 14,
+                        ),
+                        backgroundColor: Colors.blueAccent,
+                      ),
+                      child: const Text(
+                        "Continue",
+                        style: TextStyle(fontSize: 16),
+                      ),
                     ),
 
                 const SizedBox(height: 28),
                 const Text(
-                  'Your photo will not be shared with any external parties.',
+                  'Your photos will not be shared with any external parties.',
                   style: TextStyle(color: Colors.grey, fontSize: 13),
                   textAlign: TextAlign.center,
                 ),
-
                 const SizedBox(height: 24),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildSelfieSection({
+    required String label,
+    required String description,
+    required File? file,
+    required VoidCallback onTap,
+  }) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w600,
+            color: Colors.black,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          description,
+          style: const TextStyle(fontSize: 14, color: Colors.grey),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 10),
+        InkWell(
+          onTap: controller.isLoading.value ? null : onTap,
+          borderRadius: BorderRadius.circular(100),
+          child: Container(
+            width: 160,
+            height: 160,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.blueAccent, width: 3),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.blue.withOpacity(0.2),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child:
+                file != null
+                    ? ClipOval(child: Image.file(file, fit: BoxFit.cover))
+                    : const Center(
+                      child: Icon(
+                        Icons.camera_alt_rounded,
+                        size: 50,
+                        color: Colors.blueAccent,
+                      ),
+                    ),
+          ),
+        ),
+      ],
     );
   }
 }

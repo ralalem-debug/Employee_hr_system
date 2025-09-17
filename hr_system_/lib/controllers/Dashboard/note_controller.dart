@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:hr_system_/app_config.dart';
 import '../../models/Dashboard/note_model.dart';
 
 class NoteController extends GetxController {
@@ -13,10 +14,10 @@ class NoteController extends GetxController {
   var isLoading = false.obs;
   var error = RxnString();
 
-  static const String apiUrl = 'http://192.168.1.158/api/notes/send-note';
-
   // ✅ Secure storage
   final storage = const FlutterSecureStorage();
+
+  String get _apiUrl => '${AppConfig.baseUrl}/notes/send-note';
 
   // Send note to API
   Future<void> sendNote() async {
@@ -37,7 +38,7 @@ class NoteController extends GetxController {
 
     try {
       final response = await http.post(
-        Uri.parse(apiUrl),
+        Uri.parse(_apiUrl),
         headers: {
           'Content-Type': 'application/json',
           if (token.isNotEmpty) 'Authorization': 'Bearer $token',

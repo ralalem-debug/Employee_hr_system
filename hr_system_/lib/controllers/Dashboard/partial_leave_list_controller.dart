@@ -1,15 +1,30 @@
 import 'dart:convert';
 import 'dart:async';
-import 'package:hr_system_/models/Dashboard/partial_leave_list.dart';
 import 'package:http/http.dart' as http;
+import '../../app_config.dart';
+import 'package:hr_system_/models/Dashboard/partial_leave_list.dart';
 
 class PartialLeaveListController {
-  static const String BASE_HOST = '192.168.1.158';
   static const Duration _timeout = Duration(seconds: 20);
+
+  // يبني URI بالاعتماد على AppConfig.baseUrl + path + (اختياري) query
+  Uri _u(String path, [Map<String, String>? qp]) {
+    final b = Uri.parse(AppConfig.baseUrl); // مثال: http://192.168.1.158/api
+    final basePath =
+        b.path.endsWith('/')
+            ? b.path.substring(0, b.path.length - 1)
+            : b.path; // "/api"
+    final addPath =
+        path.startsWith('/') ? path.substring(1) : path; // "employee/..."
+    return b.replace(
+      path: '$basePath/$addPath', // "/api/employee/..."
+      queryParameters: (qp != null && qp.isNotEmpty) ? qp : null,
+    );
+  }
 
   Map<String, String> _headers(String jwt) => {
     'Authorization': 'Bearer $jwt',
-    'accept': 'application/json',
+    'Accept': 'application/json',
   };
 
   Future<List<PartialDayLeaveModel>> fetchLeaves({
@@ -21,15 +36,11 @@ class PartialLeaveListController {
       throw Exception('Missing JWT token');
     }
 
-    final queryParams = <String, String>{};
-    if (sortBy != null) queryParams['sortBy'] = sortBy;
-    if (order != null) queryParams['order'] = order;
+    final qp = <String, String>{};
+    if (sortBy != null) qp['sortBy'] = sortBy;
+    if (order != null) qp['order'] = order;
 
-    final uri = Uri.http(
-      BASE_HOST,
-      '/api/employee/list-of-partial-day-leaves',
-      queryParams,
-    );
+    final uri = _u('/employee/list-of-partial-day-leaves', qp);
 
     final response = await http
         .get(uri, headers: _headers(jwtToken))
@@ -40,8 +51,10 @@ class PartialLeaveListController {
 
     if (response.statusCode == 200) {
       try {
-        final body = response.body.isEmpty ? '[]' : response.body;
-        final List list = jsonDecode(body) as List;
+        final raw = response.body.isEmpty ? '[]' : response.body;
+        final decoded = jsonDecode(raw);
+        final List list =
+            decoded is List ? decoded : (decoded['items'] ?? []) as List;
 
         if (list.isNotEmpty && list.first is Map) {
           final Map first = list.first as Map;
@@ -52,11 +65,9 @@ class PartialLeaveListController {
         }
 
         return list.map<PartialDayLeaveModel>((e) {
-          final model = PartialDayLeaveModel.fromJson(
-            e as Map<String, dynamic>,
-          );
-
-          final dur = (e['actualLeaveDuration'] ?? '').toString().trim();
+          final m = e as Map<String, dynamic>;
+          final model = PartialDayLeaveModel.fromJson(m);
+          final dur = (m['actualLeaveDuration'] ?? '').toString().trim();
           if (dur.isNotEmpty) {
             model.actualLeaveDuration = dur;
           }
@@ -76,7 +87,7 @@ class PartialLeaveListController {
     String partialLeaveId,
     String jwtToken,
   ) async {
-    final uri = Uri.http(BASE_HOST, '/api/employee/cancel-partial-day-leave');
+    final uri = _u('/employee/cancel-partial-day-leave');
 
     final response = await http
         .post(
@@ -94,10 +105,7 @@ class PartialLeaveListController {
   }
 
   Future<String?> startPartialDayLeave(String leaveId, String jwtToken) async {
-    final uri = Uri.http(
-      BASE_HOST,
-      '/api/employee/start-partial-leave/$leaveId',
-    );
+    final uri = _u('/employee/start-partial-leave/$leaveId');
 
     final res = await http
         .post(uri, headers: _headers(jwtToken))
@@ -120,10 +128,10 @@ class PartialLeaveListController {
     throw Exception('Start failed: ${res.statusCode} ${res.body}');
   }
 
-  /// ينهي الإجازة الجزئية. يبقى يرجّع bool حتى لا نكسر الواجهة.
-  /// لو الـ BODY يحتوي leaveEndTime/actualLeaveDuration رح نطبعهم للـ Logs.
+  /// ينهي الإجازة الجزئية. يرجّع bool (نجاح/فشل) للحفاظ على الواجهة.
+  /// لو الـ BODY يحتوي leaveEndTime/actualLeaveDuration بنطبعهم للّوجز.
   Future<bool> endPartialDayLeave(String leaveId, String jwtToken) async {
-    final uri = Uri.http(BASE_HOST, '/api/employee/end-partial-leave/$leaveId');
+    final uri = _u('/employee/end-partial-leave/$leaveId');
 
     final response = await http
         .post(uri, headers: _headers(jwtToken))
@@ -141,10 +149,9 @@ class PartialLeaveListController {
           final dur = (m['actualLeaveDuration'] ?? '').toString().trim();
           if (endAt.isNotEmpty) print("Parsed leaveEndTime: $endAt");
           if (dur.isNotEmpty) print("Parsed actualLeaveDuration: $dur");
-          // تقدر ترجعهم بدل الـ bool لو حبيت تعدّل الواجهة لاحقًا
         }
       } catch (_) {
-        // تجاهل بارسنغ خاطئ، المهم رجع 200
+        // تجاهل parsing error، المهم الكود نجاح
       }
       return true;
     }

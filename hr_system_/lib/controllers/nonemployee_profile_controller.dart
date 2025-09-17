@@ -1,42 +1,44 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hr_system_/models/non_employee.dart/nonemployee_profile.dart';
+import 'package:hr_system_/app_config.dart';
 
 class ProfileController extends GetxController {
   var isLoading = false.obs;
   var profile = Rxn<NonEmployeeProfile>();
 
   final storage = const FlutterSecureStorage();
-  final baseUrl = "http://192.168.1.158";
+  static const _timeout = Duration(seconds: 20);
 
   /// 🔹 جلب بيانات البروفايل
   Future<void> fetchProfile() async {
     isLoading.value = true;
     final token = await storage.read(key: "auth_token");
 
-    if (token == null) {
+    if (token == null || token.isEmpty) {
       _showSnackbar("Error", "No token found. Please login again.", Colors.red);
       isLoading.value = false;
       return;
     }
 
     try {
-      final res = await http.get(
-        Uri.parse("$baseUrl/api/nonemployees/profile"),
-        headers: {
-          "Authorization": "Bearer $token",
-          "accept": "application/json",
-        },
-      );
+      final res = await http
+          .get(
+            Uri.parse("${AppConfig.baseUrl}/nonemployees/profile"),
+            headers: {
+              "Authorization": "Bearer $token",
+              "accept": "application/json",
+            },
+          )
+          .timeout(_timeout);
 
       if (res.statusCode == 200) {
-        final data = jsonDecode(res.body);
-        profile.value = NonEmployeeProfile.fromJson(data);
+        profile.value = NonEmployeeProfile.fromJson(jsonDecode(res.body));
       } else {
         _showSnackbar(
           "Error",
@@ -44,6 +46,8 @@ class ProfileController extends GetxController {
           Colors.red,
         );
       }
+    } on TimeoutException {
+      _showSnackbar("Timeout", "Server took too long to respond.", Colors.red);
     } catch (e) {
       _showSnackbar("Error", "Network error: $e", Colors.red);
     } finally {
@@ -64,7 +68,7 @@ class ProfileController extends GetxController {
     isLoading.value = true;
     final token = await storage.read(key: "auth_token");
 
-    if (token == null) {
+    if (token == null || token.isEmpty) {
       _showSnackbar("Error", "No token found. Please login again.", Colors.red);
       isLoading.value = false;
       return;
@@ -73,7 +77,7 @@ class ProfileController extends GetxController {
     try {
       var request = http.MultipartRequest(
         "PUT",
-        Uri.parse("$baseUrl/api/nonemployees/profile"),
+        Uri.parse("${AppConfig.baseUrl}/nonemployees/profile"),
       );
       request.headers["Authorization"] = "Bearer $token";
 
@@ -90,27 +94,27 @@ class ProfileController extends GetxController {
         request.files.add(await http.MultipartFile.fromPath("CV", cvFile.path));
       }
 
-      var response = await request.send();
+      var response = await request.send().timeout(_timeout);
       var body = await response.stream.bytesToString();
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(body);
-
-        // نحدث البيانات بالرد
-        profile.value = NonEmployeeProfile.fromJson(data);
-
-        // نرجع نجيب البروفايل لضمان تحديث الـ CV وغيره
-        await fetchProfile();
-
+        profile.value = NonEmployeeProfile.fromJson(jsonDecode(body));
+        await fetchProfile(); // ✅ إعادة جلب للتأكيد
         _showSnackbar("Success", "Profile updated successfully!", Colors.green);
       } else {
+        String serverMsg = body;
+        try {
+          final m = jsonDecode(body);
+          if (m is Map && m['message'] is String) serverMsg = m['message'];
+        } catch (_) {}
         _showSnackbar(
           "Error",
-          "Failed to update profile (${response.statusCode})",
+          "Failed to update profile: $serverMsg",
           Colors.red,
         );
-        print("❌ Response: $body");
       }
+    } on TimeoutException {
+      _showSnackbar("Timeout", "Server took too long to respond.", Colors.red);
     } catch (e) {
       _showSnackbar("Error", "Network error: $e", Colors.red);
     } finally {

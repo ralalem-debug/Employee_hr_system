@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import '../../models/Dashboard/complaint_model.dart';
+import '../../app_config.dart';
 
 class ComplaintController extends GetxController {
   final subjectController = TextEditingController();
@@ -13,10 +14,17 @@ class ComplaintController extends GetxController {
   var isLoading = false.obs;
   var error = RxnString();
 
-  static const String apiUrl =
-      'http://192.168.1.158/api/complaints/send-complaint';
-
   final storage = const FlutterSecureStorage();
+
+  Future<String?> _getToken() => storage.read(key: 'auth_token');
+
+  Uri _u(String path) => Uri.parse('${AppConfig.baseUrl}$path');
+
+  Map<String, String> _headers(String? token) => {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+  };
 
   Future<void> sendComplaint() async {
     final subject = subjectController.text.trim();
@@ -28,31 +36,39 @@ class ComplaintController extends GetxController {
     }
 
     isLoading.value = true;
+    isSent.value = false;
     error.value = null;
 
-    final token = await storage.read(key: 'auth_token') ?? '';
-
+    final token = await _getToken();
     final complaint = ComplaintModel(subject: subject, details: details);
 
     try {
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        headers: {
-          'Content-Type': 'application/json',
-          if (token.isNotEmpty) 'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode(complaint.toJson()),
-      );
+      final res = await http
+          .post(
+            _u('/complaints/send-complaint'),
+            headers: _headers(token),
+            body: jsonEncode(complaint.toJson()),
+          )
+          .timeout(const Duration(seconds: 15));
 
-      if (response.statusCode == 200) {
+      if (res.statusCode == 200 || res.statusCode == 201) {
         isSent.value = true;
-        error.value = null;
         subjectController.clear();
         detailsController.clear();
+        error.value = null;
+      } else if (res.statusCode == 401) {
+        error.value = "Not authorized. Please login again.";
       } else {
-        error.value = "Error sending complaint: ${response.body}";
+        // حاول نقرأ رسالة من السيرفر إن وُجدت
+        String msg = res.body;
+        try {
+          final m = jsonDecode(res.body);
+          if (m is Map && m['message'] is String) msg = m['message'];
+          if (m is Map && m['error'] is String) msg = m['error'];
+        } catch (_) {}
+        error.value = "Error ${res.statusCode}: $msg";
       }
-    } catch (e) {
+    } on Exception catch (e) {
       error.value = "Connection error: $e";
     } finally {
       isLoading.value = false;

@@ -1,118 +1,142 @@
 import 'dart:convert';
+import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/attendance_model.dart';
+import '../app_config.dart';
 
 class AttendanceController {
-  final String baseUrl = 'http://192.168.1.158/api/attendance';
-
   // ✅ Secure storage instance
   final storage = const FlutterSecureStorage();
+  static const _timeout = Duration(seconds: 15);
+
+  Future<String?> _getToken() => storage.read(key: 'auth_token');
+
+  Uri _u(String path) {
+    final b = Uri.parse(AppConfig.baseUrl); // مثال: http://192.168.1.158/api
+    final basePath =
+        b.path.endsWith('/') ? b.path.substring(0, b.path.length - 1) : b.path;
+    final addPath = path.startsWith('/') ? path.substring(1) : path;
+    return b.replace(path: '$basePath/$addPath');
+  }
+
+  Map<String, String> _headers(String? token) => {
+    'Accept': 'application/json',
+    if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+  };
 
   /// (CheckIn, CheckOut, TotalHours)
   Future<AttendanceModel?> fetchCheckInOutTime() async {
-    final token = await storage.read(key: 'auth_token');
+    final token = await _getToken();
     if (token == null || token.isEmpty) return null;
 
-    final url = '$baseUrl/checkInOut-time';
-    final response = await http.get(
-      Uri.parse(url),
-      headers: {'Authorization': 'Bearer $token', 'accept': '*/*'},
-    );
+    try {
+      final res = await http
+          .get(_u('/attendance/checkInOut-time'), headers: _headers(token))
+          .timeout(_timeout);
 
-    if (response.statusCode == 200) {
-      final json = jsonDecode(response.body);
-      return AttendanceModel.fromJson(json);
+      if (res.statusCode == 200) {
+        final json = jsonDecode(res.body);
+        return AttendanceModel.fromJson(json);
+      }
+      return null;
+    } on TimeoutException {
+      print("⏱️ Timeout while fetching checkInOut-time");
+      return null;
+    } catch (e) {
+      print("❌ Exception fetchCheckInOutTime: $e");
+      return null;
     }
-    return null;
   }
 
   /// ✅ تسجيل الحضور
   Future<DateTime?> doCheckIn() async {
-    final token = await storage.read(key: 'auth_token');
+    final token = await _getToken();
     if (token == null || token.isEmpty) return null;
 
-    final url = '$baseUrl/checkin';
-    final response = await http.post(
-      Uri.parse(url),
-      headers: {'Authorization': 'Bearer $token', 'accept': '*/*'},
-    );
+    try {
+      final res = await http
+          .post(_u('/attendance/checkin'), headers: _headers(token))
+          .timeout(_timeout);
 
-    if (response.statusCode == 200) {
-      final json = jsonDecode(response.body);
-      // ممكن يرجع "checkInTime": "09:09:34"
-      String? checkInStr = json['checkInTime'];
-      if (checkInStr != null) {
-        final now = DateTime.now();
-        final parts = checkInStr.split(":");
-        return DateTime(
-          now.year,
-          now.month,
-          now.day,
-          int.parse(parts[0]),
-          int.parse(parts[1]),
-          int.parse(parts[2]),
-        );
+      if (res.statusCode == 200) {
+        final json = jsonDecode(res.body);
+        String? checkInStr = json['checkInTime'];
+        if (checkInStr != null) {
+          final now = DateTime.now();
+          final parts = checkInStr.split(":");
+          return DateTime(
+            now.year,
+            now.month,
+            now.day,
+            int.parse(parts[0]),
+            int.parse(parts[1]),
+            int.parse(parts[2]),
+          );
+        }
+        return DateTime.now();
       }
-      return DateTime.now();
+      return null;
+    } catch (e) {
+      print("❌ Exception doCheckIn: $e");
+      return null;
     }
-    return null;
   }
 
   /// ✅ تسجيل الانصراف
   Future<DateTime?> doCheckOut() async {
-    final token = await storage.read(key: 'auth_token');
+    final token = await _getToken();
     if (token == null || token.isEmpty) return null;
 
-    final url = '$baseUrl/checkInOut-time';
-    final response = await http.post(
-      Uri.parse(url),
-      headers: {'Authorization': 'Bearer $token', 'accept': '*/*'},
-    );
+    try {
+      final res = await http
+          .post(_u('/attendance/checkout'), headers: _headers(token))
+          .timeout(_timeout);
 
-    if (response.statusCode == 200) {
-      final json = jsonDecode(response.body);
-      // ممكن يرجع "checkOutTime": "14:11:08"
-      String? checkOutStr = json['checkOutTime'];
-      if (checkOutStr != null) {
-        final now = DateTime.now();
-        final parts = checkOutStr.split(":");
-        return DateTime(
-          now.year,
-          now.month,
-          now.day,
-          int.parse(parts[0]),
-          int.parse(parts[1]),
-          int.parse(parts[2]),
-        );
+      if (res.statusCode == 200) {
+        final json = jsonDecode(res.body);
+        String? checkOutStr = json['checkOutTime'];
+        if (checkOutStr != null) {
+          final now = DateTime.now();
+          final parts = checkOutStr.split(":");
+          return DateTime(
+            now.year,
+            now.month,
+            now.day,
+            int.parse(parts[0]),
+            int.parse(parts[1]),
+            int.parse(parts[2]),
+          );
+        }
+        return DateTime.now();
       }
-      return DateTime.now();
+      return null;
+    } catch (e) {
+      print("❌ Exception doCheckOut: $e");
+      return null;
     }
-    return null;
   }
 
-  /// ✅ التأكد من أن الموظف مسجّل في النظام (حسب ID)
+  /// ✅ التأكد من أن الموظف موجود في المكتب (حسب الكاميرات)
   Future<bool> checkAtOffice() async {
-    final employeeId = await storage.read(key: 'employee_id');
     final userId = await storage.read(key: 'user_id');
-    final idToUse =
-        (employeeId != null && employeeId.isNotEmpty) ? employeeId : userId;
+    if (userId == null || userId.isEmpty) return false;
 
-    if (idToUse == null || idToUse.isEmpty) return false;
-
-    final url =
-        'http://192.168.1.127:8000/api/registered_users?user_id=$idToUse';
     try {
-      final res = await http.get(
-        Uri.parse(url),
-        headers: {'accept': 'application/json'},
-      );
+      // هذا endpoint مختلف عن الـ baseUrl (يشتغل على service ثانية)
+      final url =
+          'http://192.168.1.164:8000/m/v1/office-status/$userId'; // لو حابب نخليه برضو configurable نحطه في AppConfig
+      final res = await http
+          .get(Uri.parse(url), headers: {'Accept': 'application/json'})
+          .timeout(_timeout);
+
       if (res.statusCode == 200) {
-        return res.body.trim() == '1';
+        final body = res.body.trim();
+        return body == '1';
       }
       return false;
     } catch (e) {
-      print("DEBUG >>> Exception while calling API: $e");
+      print("❌ Exception checkAtOffice: $e");
       return false;
     }
   }

@@ -4,15 +4,15 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/notification_model.dart';
+import '../app_config.dart';
 
 class NotificationsController extends GetxController {
   var notifications = <AppNotification>[].obs;
   var isLoading = true.obs;
   Timer? _timer;
 
-  List<String> _readIds = [];
+  Set<String> _readIds = {};
 
-  // 🔐 استخدم secure storage بدل shared prefs
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
   @override
@@ -35,7 +35,6 @@ class NotificationsController extends GetxController {
     super.onClose();
   }
 
-  ///  حفظ الإشعار كمقروء وتخزينه محلياً
   Future<void> markAsReadLocally(String notificationId) async {
     final index = notifications.indexWhere(
       (n) => n.notificationId == notificationId,
@@ -57,12 +56,11 @@ class NotificationsController extends GetxController {
   }
 
   Future<void> fetchNotifications() async {
-    const url = 'http://192.168.1.158/api/Auth/my-notifications';
+    final url = '${AppConfig.baseUrl}/Auth/my-notifications';
 
     try {
       isLoading.value = true;
 
-      // 🔐 استرجاع التوكن من secure storage
       final token = await _storage.read(key: 'auth_token');
       await _loadReadNotificationIds();
 
@@ -72,26 +70,25 @@ class NotificationsController extends GetxController {
         return;
       }
 
-      final response = await http.get(
-        Uri.parse(url),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Accept': 'application/json',
-        },
-      );
+      final response = await http
+          .get(
+            Uri.parse(url),
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Accept': 'application/json',
+            },
+          )
+          .timeout(const Duration(seconds: 15)); // ⏱️ Timeout اختياري
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> jsonData = json.decode(response.body);
+        final dynamic jsonData = json.decode(response.body);
 
-        final List<dynamic> list = jsonData['notifications'] ?? [];
-
-        final filtered =
-            list.where((json) {
-              return json['isAdmin'] == false;
-            }).toList();
+        // إذا الرد List مباشرة
+        final List<dynamic> list =
+            jsonData is List ? jsonData : (jsonData['notifications'] ?? []);
 
         notifications.value =
-            filtered.map((json) {
+            list.map((json) {
               final notif = AppNotification.fromJson(json);
               return AppNotification(
                 notificationId: notif.notificationId,
@@ -109,27 +106,28 @@ class NotificationsController extends GetxController {
       }
     } catch (e) {
       Get.snackbar("Error", "An error occurred: $e");
-      print('Exception: $e');
+      // يمكنكِ إرسال e للـ crashlytics أو اللوجز
+      // print('Exception: $e');
     } finally {
       isLoading.value = false;
     }
   }
 
-  ///  تحميل قائمة الـ IDs المقروءة من secure storage
+  /// تحميل قائمة الـ IDs المقروءة من secure storage
   Future<void> _loadReadNotificationIds() async {
     final data = await _storage.read(key: 'read_notifications');
     if (data != null && data.isNotEmpty) {
-      _readIds = List<String>.from(jsonDecode(data));
+      _readIds = Set<String>.from(jsonDecode(data));
     } else {
-      _readIds = [];
+      _readIds = {};
     }
   }
 
-  ///  حفظ قائمة المقروءات في secure storage
+  /// حفظ قائمة المقروءات في secure storage
   Future<void> _saveReadNotificationIds() async {
     await _storage.write(
       key: 'read_notifications',
-      value: jsonEncode(_readIds),
+      value: jsonEncode(_readIds.toList()),
     );
   }
 }

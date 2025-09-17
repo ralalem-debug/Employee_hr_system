@@ -157,7 +157,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   final file = File(picked.path);
                                   final ok = await controller
                                       .uploadProfileImage(file);
-                                  if (ok) {
+                                  if (ok != null) {
                                     // ✅ بعد الرفع مباشرة أعمل fetchProfile
                                     await controller.fetchProfile();
 

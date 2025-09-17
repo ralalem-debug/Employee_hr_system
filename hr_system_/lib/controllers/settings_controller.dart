@@ -11,6 +11,5 @@ class SettingsController extends GetxController {
 
   void togglePushNotifications(bool value) {
     pushNotifications.value = value;
-    // تطبيق التغيير حسب الحالة
   }
 }

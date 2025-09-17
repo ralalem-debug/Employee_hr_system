@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hr_system_/models/Dashboard/list_note_model.dart';
+import 'package:hr_system_/app_config.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -10,11 +11,11 @@ class NotesListController extends GetxController {
   var isLoading = false.obs;
   var error = RxnString();
 
-  static const String getUrl = 'http://192.168.1.158/api/notes/Employee-notes';
-  static const String deleteUrl = 'http://192.168.1.158/api/notes/delete/';
-
   // ✅ Secure storage
   final storage = const FlutterSecureStorage();
+
+  String get _getUrl => '${AppConfig.baseUrl}/notes/Employee-notes';
+  String get _deleteUrl => '${AppConfig.baseUrl}/notes/delete/';
 
   // Fetch notes from API
   Future<void> fetchNotes() async {
@@ -24,7 +25,7 @@ class NotesListController extends GetxController {
 
     try {
       final response = await http.get(
-        Uri.parse(getUrl),
+        Uri.parse(_getUrl),
         headers: {
           'Content-Type': 'application/json',
           if (token.isNotEmpty) 'Authorization': 'Bearer $token',
@@ -49,7 +50,7 @@ class NotesListController extends GetxController {
 
     try {
       final response = await http.delete(
-        Uri.parse('$deleteUrl$noteId'),
+        Uri.parse('$_deleteUrl$noteId'),
         headers: {
           'Content-Type': 'application/json',
           if (token.isNotEmpty) 'Authorization': 'Bearer $token',

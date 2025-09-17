@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:signature/signature.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../controllers/signature_controller.dart';
 import '../home_screen.dart';
 
@@ -24,9 +23,6 @@ class _SignatureScreenState extends State<SignatureScreen> {
     SignatureUploadController(),
   );
 
-  // ✅ Secure storage
-  final storage = const FlutterSecureStorage();
-
   Future<File> _bytesToFile(Uint8List data) async {
     final dir = await getTemporaryDirectory();
     final file = File('${dir.path}/signature.png');
@@ -44,15 +40,9 @@ class _SignatureScreenState extends State<SignatureScreen> {
     if (data == null) return;
     final file = await _bytesToFile(data);
 
-    // ✅ اجلب employeeId من التخزين الآمن
-    final employeeId = await storage.read(key: 'employee_id') ?? '';
-    if (employeeId.isEmpty) {
-      Get.snackbar("Error", "Missing employee ID. Please login again.");
-      return;
-    }
-
-    bool success = await _controller.uploadSignature(file, employeeId);
+    bool success = await _controller.uploadSignature(file);
     if (success) {
+      Get.snackbar("Success", "Signature uploaded successfully ✅");
       Get.offAll(() => const HomeScreen());
     } else {
       Get.snackbar("Error", _controller.errorMessage ?? "Failed to upload");
@@ -93,6 +83,7 @@ class _SignatureScreenState extends State<SignatureScreen> {
                         ),
                         const SizedBox(height: 16),
 
+                        // صندوق التوقيع
                         Container(
                           decoration: BoxDecoration(
                             color: Colors.grey[200],
@@ -110,6 +101,7 @@ class _SignatureScreenState extends State<SignatureScreen> {
                         ),
                         const SizedBox(height: 18),
 
+                        // الأزرار
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -127,6 +119,7 @@ class _SignatureScreenState extends State<SignatureScreen> {
 
                         const SizedBox(height: 30),
 
+                        // ملاحظة
                         Container(
                           padding: const EdgeInsets.symmetric(
                             vertical: 13,

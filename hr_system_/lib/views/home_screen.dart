@@ -69,8 +69,8 @@ class _HomeScreenState extends State<HomeScreen> {
     if (!mounted) return;
     setState(() => isLoading = true);
 
-    final isRegistered = await controller.checkAtOffice();
-    if (isRegistered) {
+    final isAtOffice = await controller.checkAtOffice(); // ✅ Clearer name
+    if (isAtOffice) {
       DateTime? inTime = await controller.doCheckIn();
       if (inTime != null) {
         checkInTime = inTime;
@@ -78,10 +78,10 @@ class _HomeScreenState extends State<HomeScreen> {
         isCheckedIn = true;
         minHalfDayText = "";
         _startProgressAutoUpdate();
-        _showMessage("تم تسجيل الحضور بنجاح!");
+        _showMessage("Check-in completed successfully!");
       }
     } else {
-      _showMessage("You are not registered in the system");
+      _showMessage("⚠️ Cameras did not detect you at the office");
     }
 
     if (!mounted) return;

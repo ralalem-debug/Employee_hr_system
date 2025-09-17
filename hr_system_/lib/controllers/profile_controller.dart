@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:get/get.dart';
+import 'package:hr_system_/app_config.dart';
 import 'package:hr_system_/models/profile%20page/Documents_info_model.dart';
 import 'package:hr_system_/models/profile%20page/personal_info_model.dart';
 import 'package:hr_system_/models/profile%20page/professional_info_model.dart';
@@ -18,7 +19,7 @@ class ProfileController extends GetxController {
   var isLoading = false.obs;
   var error = RxnString();
 
-  final String baseUrl = "http://192.168.1.158";
+  final String baseUrl = AppConfig.baseUrl;
 
   // ✅ Secure storage
   final storage = const FlutterSecureStorage();
@@ -270,8 +271,7 @@ class ProfileController extends GetxController {
     }
   }
 
-  // ✅ رفع صورة المستخدم
-  Future<bool> uploadProfileImage(File file) async {
+  Future<String?> uploadProfileImage(File file) async {
     try {
       final auth = await _getAuthData();
       final token = auth["token"]!;
@@ -295,15 +295,13 @@ class ProfileController extends GetxController {
       );
 
       if (response.statusCode == 200) {
-        await fetchUserImage(); // ✅ بعد الرفع نجيب الصورة الجديدة
-        return true;
+        await fetchUserImage();
+        return "Image uploaded successfully!";
       } else {
-        Get.snackbar("Error", "Failed to upload image");
-        return false;
+        return "Upload failed [${response.statusCode}]";
       }
     } catch (e) {
-      Get.snackbar("Error", e.toString());
-      return false;
+      return "❌ Exception: $e";
     }
   }
 

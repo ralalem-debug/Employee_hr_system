@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:hr_system_/app_config.dart';
 import 'login_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -30,10 +31,26 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller.forward();
 
-    // بعد 3 ثواني → دايمًا روح على صفحة تسجيل الدخول
-    Future.delayed(const Duration(seconds: 3), () {
-      Get.offAll(() => const LoginScreen());
-    });
+    _initApp();
+  }
+
+  Future<void> _initApp() async {
+    await Future.delayed(const Duration(seconds: 2)); // خلي الأنيميشن يبين
+
+    if (AppConfig.baseUrl.isEmpty) {
+      Get.offAll(
+        () => const LoginScreen(),
+        arguments: {
+          "error": "لم يتم العثور على السيرفر. يرجى المحاولة لاحقًا.",
+        },
+      );
+    } else {
+      _goLogin();
+    }
+  }
+
+  void _goLogin() {
+    Get.offAll(() => const LoginScreen());
   }
 
   @override
@@ -43,7 +60,7 @@ class _SplashScreenState extends State<SplashScreen>
         children: [
           Positioned.fill(
             child: Opacity(
-              opacity: 0.90,
+              opacity: 0.9,
               child: Image.asset('images/bg_pattern.png', fit: BoxFit.cover),
             ),
           ),

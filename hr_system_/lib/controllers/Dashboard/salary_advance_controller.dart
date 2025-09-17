@@ -1,9 +1,12 @@
+// controllers/salary_advance_controller.dart
 import 'dart:convert';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../models/Dashboard/salary_advance_model.dart';
+import '../../app_config.dart';
 
 class SalaryAdvanceController extends GetxController {
   final amountController = TextEditingController();
@@ -13,11 +16,29 @@ class SalaryAdvanceController extends GetxController {
   var isLoading = false.obs;
   var error = RxnString();
 
-  static const String apiUrl =
-      'http://192.168.1.158/api/SalaryAdvance/send-request';
-
   // ✅ Secure storage
   final storage = const FlutterSecureStorage();
+
+  static const _timeout = Duration(seconds: 15);
+
+  Future<String?> _getToken() => storage.read(key: 'auth_token');
+
+  Uri _u(String path) {
+    final b = Uri.parse(AppConfig.baseUrl); // مثال: http://x.x.x.x/api
+    final basePath =
+        b.path.endsWith('/')
+            ? b.path.substring(0, b.path.length - 1)
+            : b.path; // "/api"
+    final addPath =
+        path.startsWith('/') ? path.substring(1) : path; // "SalaryAdvance/..."
+    return b.replace(path: '$basePath/$addPath'); // "/api/SalaryAdvance/..."
+  }
+
+  Map<String, String> _headers(String? token) => {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+  };
 
   Future<void> sendRequest() async {
     final amountText = amountController.text.trim();
@@ -35,9 +56,15 @@ class SalaryAdvanceController extends GetxController {
     }
 
     isLoading.value = true;
+    isSent.value = false;
     error.value = null;
 
-    final token = await storage.read(key: 'auth_token') ?? '';
+    final token = await _getToken();
+    if (token == null || token.isEmpty) {
+      error.value = "Unauthorized. Please login again.";
+      isLoading.value = false;
+      return;
+    }
 
     final salaryAdvance = SalaryAdvanceModel(
       amount: amount,
@@ -46,23 +73,32 @@ class SalaryAdvanceController extends GetxController {
     );
 
     try {
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        headers: {
-          'Content-Type': 'application/json',
-          if (token.isNotEmpty) 'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode(salaryAdvance.toJson()),
-      );
+      final res = await http
+          .post(
+            _u('/SalaryAdvance/send-request'),
+            headers: _headers(token),
+            body: jsonEncode(salaryAdvance.toJson()),
+          )
+          .timeout(_timeout);
 
-      if (response.statusCode == 200) {
+      if (res.statusCode == 200 || res.statusCode == 201) {
         isSent.value = true;
-        error.value = null;
         amountController.clear();
         monthController.clear();
+        error.value = null;
+      } else if (res.statusCode == 401) {
+        error.value = "Unauthorized. Please login again.";
       } else {
-        error.value = "Error submitting request: ${response.body}";
+        String msg = res.body;
+        try {
+          final m = jsonDecode(res.body);
+          if (m is Map && m['message'] is String) msg = m['message'];
+          if (m is Map && m['error'] is String) msg = m['error'];
+        } catch (_) {}
+        error.value = "Error ${res.statusCode}: $msg";
       }
+    } on TimeoutException {
+      error.value = "Connection timeout. Please try again.";
     } catch (e) {
       error.value = "Connection error: $e";
     } finally {

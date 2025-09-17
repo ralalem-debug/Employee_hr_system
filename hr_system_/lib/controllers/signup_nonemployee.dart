@@ -1,10 +1,11 @@
 import 'package:get/get.dart';
 import 'package:hr_system_/models/signup_nonemployee_model.dart';
 import 'package:http/http.dart' as http;
+import 'package:hr_system_/app_config.dart';
 
 class NonEmployeeController extends GetxController {
   var isLoading = false.obs;
-  String baseUrl = "http://192.168.1.158/api/nonemployees";
+  String baseUrl = "${AppConfig.baseUrl}/nonemployees"; // ✅ ديناميكي
 
   Future<bool> signUp(NonEmployeeSignUpModel model) async {
     isLoading.value = true;
@@ -20,7 +21,7 @@ class NonEmployeeController extends GetxController {
     request.fields['Password'] = model.password;
     request.fields['ConfirmPassword'] = model.confirmPassword;
 
-    // رفع CV
+    // ✅ رفع CV
     request.files.add(await http.MultipartFile.fromPath('CV', model.cvPath));
 
     try {

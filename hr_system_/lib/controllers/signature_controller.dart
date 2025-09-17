@@ -2,33 +2,35 @@ import 'dart:io';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:path/path.dart' as p;
+import 'package:hr_system_/app_config.dart';
 
 class SignatureUploadController extends GetxController {
   var isLoading = false.obs;
   String? errorMessage;
 
-  // ✅ Secure storage
   final storage = const FlutterSecureStorage();
 
-  Future<bool> uploadSignature(File signatureFile, String employeeId) async {
+  Future<bool> uploadSignature(File signatureFile) async {
     isLoading.value = true;
     errorMessage = null;
 
     try {
       final token = await storage.read(key: 'auth_token');
 
-      final uri = Uri.parse(
-        "http://192.168.1.158/api/employee/upload-signature",
-      );
+      final uri = Uri.parse("${AppConfig.baseUrl}/employee/upload-signature");
       final req = http.MultipartRequest('POST', uri);
 
+      final bytes = await signatureFile.readAsBytes();
       req.files.add(
-        await http.MultipartFile.fromPath('file', signatureFile.path),
+        http.MultipartFile.fromBytes(
+          'File',
+          bytes,
+          filename: p.basename(signatureFile.path),
+        ),
       );
 
-      // فقط إذا الـ API فعلاً بطلب employeeId كـ field
-      req.fields['employeeId'] = employeeId;
-
+      req.headers['accept'] = 'application/json';
       if (token != null && token.isNotEmpty) {
         req.headers['Authorization'] = 'Bearer $token';
       }
@@ -39,13 +41,11 @@ class SignatureUploadController extends GetxController {
       isLoading.value = false;
 
       if (res.statusCode == 200) {
-        print("✅ Signature uploaded");
-        // ✅ Store flag in secure storage
+        print("✅ Signature uploaded successfully: $resBody");
         await storage.write(key: 'signature_done', value: 'true');
         return true;
       } else {
-        errorMessage =
-            "Failed to upload signature. (${res.statusCode})\n$resBody";
+        errorMessage = "Failed (${res.statusCode}): $resBody";
         print(errorMessage);
         return false;
       }
