@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import '../controllers/attendance_controller.dart';
+import '../models/attendance_model.dart';
 import 'employee_nav_bar.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -14,9 +15,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   int _selectedIndex = 0;
   final AttendanceController controller = AttendanceController();
 
-  bool isAtOffice = false;
+  AttendanceModel? attendance;
   bool isLoading = false;
-  Timer? timer;
+  Timer? apiTimer;
+  Timer? liveTimer;
 
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
@@ -28,9 +30,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     super.initState();
     _checkStatus();
 
-    timer = Timer.periodic(const Duration(seconds: 30), (_) => _checkStatus());
+    // تحديث من API كل 30 ثانية
+    apiTimer = Timer.periodic(
+      const Duration(seconds: 30),
+      (_) => _checkStatus(),
+    );
 
-    // Animation for fade
+    // تحديث العداد الحي كل دقيقة
+    liveTimer = Timer.periodic(const Duration(minutes: 1), (_) {
+      if (mounted) setState(() {});
+    });
+
     _fadeController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 1),
@@ -41,7 +51,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
     _fadeController.forward();
 
-    // Animation for background circles
     _bgController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 10),
@@ -50,7 +59,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    timer?.cancel();
+    apiTimer?.cancel();
+    liveTimer?.cancel();
     _fadeController.dispose();
     _bgController.dispose();
     super.dispose();
@@ -63,12 +73,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Future<void> _checkStatus() async {
     setState(() => isLoading = true);
     final status = await controller.checkAtOffice();
-    if (mounted) {
+    if (mounted && status != null) {
       setState(() {
-        isAtOffice = status;
+        attendance = status;
         isLoading = false;
       });
-      _fadeController.forward(from: 0); // Re-animate status change
+      _fadeController.forward(from: 0);
     }
   }
 
@@ -82,7 +92,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      backgroundColor: Colors.white, // ✅ خلفية بيضا بالكامل
+      backgroundColor: Colors.white,
       bottomNavigationBar: EmployeeNavBar(
         currentIndex: _selectedIndex,
         onTap: _onTabTapped,
@@ -92,7 +102,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         builder: (context, child) {
           return Stack(
             children: [
-              // ===== دوائر خفيفة متحركة (أزرق فاتح شفاف) =====
+              // خلفية دوائر
               Positioned(
                 top: -100 + 20 * _bgController.value,
                 left: -80,
@@ -110,17 +120,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
               ),
 
-              // ===== المحتوى =====
               SafeArea(
                 child: Column(
                   children: [
-                    // العنوان
-                    Padding(padding: const EdgeInsets.all(20)),
+                    const Padding(padding: EdgeInsets.all(20)),
 
                     // الوقت والتاريخ
                     Card(
                       color: Colors.white,
-                      elevation: 0, // clean look
+                      elevation: 0,
                       margin: const EdgeInsets.symmetric(
                         horizontal: 20,
                         vertical: 10,
@@ -167,22 +175,27 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 100),
+                    const SizedBox(height: 70),
 
-                    // دائرة الحالة
                     FadeTransition(
                       opacity: _fadeAnimation,
                       child: CircularPercentIndicator(
                         radius: 110,
                         lineWidth: 14,
-                        percent: isAtOffice ? 1 : 0,
+                        percent:
+                            _calculateWorkProgress() %
+                            1, // 🔹 يدور ويعيد نفسه بعد كل لفة
                         animation: true,
                         circularStrokeCap: CircularStrokeCap.round,
                         backgroundColor: Colors.blueGrey.shade100,
+
+                        // 🔹 اللون يتغير بعد 8 ساعات
                         progressColor:
-                            isAtOffice
-                                ? Colors.greenAccent.shade700
-                                : Colors.redAccent,
+                            (_calculateWorkProgress() >= 1)
+                                ? Colors
+                                    .redAccent // Overtime
+                                : Colors.teal.shade400, // Normal time
+
                         center: Container(
                           width: 170,
                           height: 170,
@@ -203,25 +216,33 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                           MainAxisAlignment.center,
                                       children: [
                                         Icon(
-                                          isAtOffice
-                                              ? Icons.emoji_events
+                                          (attendance?.isAtOffice ?? false)
+                                              ? (_calculateWorkProgress() >= 1
+                                                  ? Icons
+                                                      .lock_clock // بعد 8 ساعات
+                                                  : Icons
+                                                      .emoji_events) // قبل 8 ساعات
                                               : Icons.location_off,
                                           color:
-                                              isAtOffice
-                                                  ? Colors.green
-                                                  : Colors.redAccent,
+                                              (_calculateWorkProgress() >= 1)
+                                                  ? Colors.redAccent
+                                                  : Colors.teal.shade400,
                                           size: 60,
                                         ),
                                         const SizedBox(height: 12),
                                         Text(
-                                          isAtOffice ? "At Office" : "Away",
+                                          (attendance?.isAtOffice ?? false)
+                                              ? (_calculateWorkProgress() >= 1
+                                                  ? "Overtime"
+                                                  : "At Office")
+                                              : "Away",
                                           style: TextStyle(
                                             fontWeight: FontWeight.bold,
                                             fontSize: 16,
                                             color:
-                                                isAtOffice
-                                                    ? Colors.green.shade700
-                                                    : Colors.redAccent,
+                                                (_calculateWorkProgress() >= 1)
+                                                    ? Colors.redAccent
+                                                    : Colors.teal.shade400,
                                           ),
                                           textAlign: TextAlign.center,
                                         ),
@@ -231,7 +252,103 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 40),
+
+                    const SizedBox(height: 90),
+
+                    // 3 أعمدة (CheckIn, LastUpdated, MinutesOnline)
+                    if (attendance != null)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          // 🕒 Check-in
+                          Column(
+                            children: [
+                              const Icon(
+                                Icons.access_time,
+                                size: 32,
+                                color: Colors.blue,
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                attendance!.checkInAt != null
+                                    ? "${attendance!.checkInAt!.hour.toString().padLeft(2, '0')}:${attendance!.checkInAt!.minute.toString().padLeft(2, '0')}"
+                                    : "--:--",
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              const Text(
+                                "checkInAt",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          // 🔄 Last Updated
+                          Column(
+                            children: [
+                              const Icon(
+                                Icons.update,
+                                size: 32,
+                                color: Colors.blue,
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                attendance!.lastUpdated != null
+                                    ? "${attendance!.lastUpdated!.hour.toString().padLeft(2, '0')}:${attendance!.lastUpdated!.minute.toString().padLeft(2, '0')}"
+                                    : "--:--",
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              const Text(
+                                "lastUpdated",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          // ⏳ Minutes Online (حي)
+                          Column(
+                            children: [
+                              const Icon(
+                                Icons.timelapse,
+                                size: 32,
+                                color: Colors.blue,
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                attendance?.liveMinutesOnline ?? "--:--",
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              const Text(
+                                "minutesOnline",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                   ],
                 ),
               ),
@@ -240,6 +357,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         },
       ),
     );
+  }
+
+  double _calculateWorkProgress() {
+    if (attendance?.checkInAt == null) return 0;
+
+    final diff = DateTime.now().difference(attendance!.checkInAt!);
+    final totalMinutes = diff.inMinutes;
+
+    // 480 دقيقة = 8 ساعات
+    return totalMinutes / 480; // ممكن يصير > 1
   }
 
   String _weekdayName(int weekday) {

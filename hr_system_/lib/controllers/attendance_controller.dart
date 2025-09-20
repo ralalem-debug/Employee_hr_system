@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../app_config.dart';
+import '../models/attendance_model.dart';
 
 class AttendanceController {
   final storage = const FlutterSecureStorage();
@@ -49,7 +50,7 @@ class AttendanceController {
     }
   }
 
-  Future<bool> checkAtOffice() async {
+  Future<AttendanceModel?> checkAtOffice() async {
     String? userId = await storage.read(key: 'user_id');
     final token = await _getToken();
 
@@ -59,11 +60,11 @@ class AttendanceController {
 
     if (userId == null || userId.isEmpty) {
       print("❌ No userId available");
-      return false;
+      return null;
     }
 
     try {
-      final url = "http://192.168.1.164:8001/m/v1/office-status/$userId";
+      final url = "http://192.168.1.247:8001/at-office/$userId";
       print("📡 Calling office-status API: $url");
 
       final headers = {'Accept': 'application/json'};
@@ -80,13 +81,13 @@ class AttendanceController {
 
       if (res.statusCode == 200) {
         final json = jsonDecode(res.body);
-        return json['isAtOffice'] == true;
+        return AttendanceModel.fromJson(json);
       } else {
-        return false;
+        return null;
       }
     } catch (e) {
       print("❌ Exception checkAtOffice: $e");
-      return false;
+      return null;
     }
   }
 }
