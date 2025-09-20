@@ -15,7 +15,6 @@ import 'views/settings/privacypolicy.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   await debugDiscovery();
   await AppConfig.init();
   runApp(const OnsetWayApp());
