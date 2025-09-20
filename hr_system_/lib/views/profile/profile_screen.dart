@@ -18,8 +18,6 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   final ProfileController controller = Get.put(ProfileController());
 
-  final String baseUrl = "http://192.168.1.158";
-
   @override
   void initState() {
     super.initState();
@@ -115,21 +113,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               radius: 48,
                               backgroundColor: Colors.blue.shade50,
                               backgroundImage:
-                                  (personal.imageUrl != null &&
-                                          personal.imageUrl!.isNotEmpty)
-                                      ? NetworkImage(
-                                        personal.imageUrl!,
-                                      ) // ✅ صار كامل من الكنترولر
+                                  personal.imageUrl != null &&
+                                          personal.imageUrl!.isNotEmpty
+                                      ? NetworkImage(personal.imageUrl!)
                                       : null,
+
                               child:
                                   (personal.imageUrl == null ||
                                           personal.imageUrl!.isEmpty)
                                       ? Text(
                                         personal.fullNameEng.isNotEmpty
                                             ? personal.fullNameEng
-                                                .substring(0, 2)
+                                                .substring(
+                                                  0,
+                                                  personal.fullNameEng.length >=
+                                                          2
+                                                      ? 2
+                                                      : 1,
+                                                )
                                                 .toUpperCase()
-                                            : "", // ✅ fallback إذا الاسم فاضي
+                                            : "",
                                         style: const TextStyle(
                                           color: Colors.white,
                                           fontSize: 20,
@@ -155,15 +158,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                                 if (picked != null) {
                                   final file = File(picked.path);
-                                  final ok = await controller
+                                  final result = await controller
                                       .uploadProfileImage(file);
-                                  if (ok != null) {
-                                    // ✅ بعد الرفع مباشرة أعمل fetchProfile
-                                    await controller.fetchProfile();
 
+                                  if (result != null &&
+                                      result.contains("success")) {
+                                    await controller.fetchProfile();
                                     Get.snackbar(
-                                      "Success",
+                                      "✅ Success",
                                       "Profile image updated",
+                                    );
+                                  } else {
+                                    Get.snackbar(
+                                      "❌ Failed",
+                                      result ?? "Unknown error",
                                     );
                                   }
                                 }
@@ -184,7 +192,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 ),
                                 child: Icon(
                                   Icons.camera_alt,
-                                  color: Color(0xff2563eb),
+                                  color: Colors.blue.shade700,
                                   size: 20,
                                 ),
                               ),
@@ -221,7 +229,74 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          _chip(personal.personalEmail, Icons.email_rounded),
+                          InkWell(
+                            onTap: () {
+                              final controllerEmail = TextEditingController(
+                                text: personal.personalEmail,
+                              );
+
+                              showDialog(
+                                context: context,
+                                builder: (_) {
+                                  return AlertDialog(
+                                    backgroundColor: const Color.fromARGB(
+                                      255,
+                                      255,
+                                      255,
+                                      255,
+                                    ),
+                                    title: const Text("Edit Email"),
+                                    content: TextField(
+                                      controller: controllerEmail,
+                                      decoration: const InputDecoration(
+                                        labelText: "Email",
+                                        border: OutlineInputBorder(),
+                                      ),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context),
+                                        child: const Text("Cancel"),
+                                      ),
+                                      ElevatedButton(
+                                        onPressed: () async {
+                                          final newEmail =
+                                              controllerEmail.text.trim();
+                                          if (newEmail.isNotEmpty) {
+                                            // ✅ تعديل القيمة محلياً
+                                            final updated = personal.copyWith(
+                                              personalEmail: newEmail,
+                                            );
+
+                                            // ✅ استدعاء API لتحديث البيانات
+                                            final success = await controller
+                                                .updatePersonalInfo(updated);
+                                            if (success) {
+                                              Get.snackbar(
+                                                "✅ Success",
+                                                "Email updated successfully",
+                                              );
+                                            } else {
+                                              Get.snackbar(
+                                                "❌ Error",
+                                                "Failed to update email",
+                                              );
+                                            }
+                                          }
+                                          Navigator.pop(context);
+                                        },
+                                        child: const Text("Save"),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            },
+                            child: _chip(
+                              personal.personalEmail,
+                              Icons.email_rounded,
+                            ),
+                          ),
                           if (personal.phoneNumber.isNotEmpty)
                             Padding(
                               padding: const EdgeInsets.only(top: 5),
@@ -553,7 +628,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           title,
           style: TextStyle(
             fontWeight: FontWeight.w700,
-            color: Color(0xff2563eb),
+            color: Colors.blue.shade700,
             fontSize: 16.7,
             letterSpacing: 0.1,
           ),

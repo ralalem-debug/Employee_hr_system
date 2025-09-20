@@ -10,7 +10,7 @@ class LeaveListController {
 
   // يبني URI بالاعتماد على AppConfig.baseUrl + path + query params
   Uri _u(String path, [Map<String, String>? qp]) {
-    final b = Uri.parse(AppConfig.baseUrl); // مثال: http://192.168.1.158/api
+    final b = Uri.parse(AppConfig.baseUrl);
     final basePath =
         b.path.endsWith('/')
             ? b.path.substring(0, b.path.length - 1)

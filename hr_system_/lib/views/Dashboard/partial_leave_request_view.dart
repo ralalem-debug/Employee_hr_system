@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../employee_nav_bar.dart';
+import '../../app_config.dart'; // ✅ مهم
 
 class PartialLeaveRequestView extends StatefulWidget {
   const PartialLeaveRequestView({super.key});
@@ -20,7 +21,6 @@ class _LeaveRequestViewState extends State<PartialLeaveRequestView> {
   TimeOfDay? toTime;
   DateTime? selectedDate;
 
-  // 🔹 FlutterSecureStorage
   final storage = const FlutterSecureStorage();
 
   @override
@@ -102,7 +102,6 @@ class _LeaveRequestViewState extends State<PartialLeaveRequestView> {
       return;
     }
 
-    // 🔹 جلب التوكن من Secure Storage
     final jwtToken = await storage.read(key: 'auth_token');
     if (jwtToken == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -119,16 +118,21 @@ class _LeaveRequestViewState extends State<PartialLeaveRequestView> {
     };
 
     try {
+      // ✅ استخدام AppConfig.baseUrl
+      final url = Uri.parse(
+        "${AppConfig.baseUrl}/employee/request-partial-day-leave",
+      );
+      print("📡 POST $url");
+
       final res = await http.post(
-        Uri.parse(
-          'http://192.168.1.158/api/employee/request-partial-day-leave',
-        ),
+        url,
         headers: {
           'Authorization': 'Bearer $jwtToken',
           'Content-Type': 'application/json',
         },
         body: jsonEncode(body),
       );
+
       if (res.statusCode == 200 || res.statusCode == 201) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Request submitted successfully')),
@@ -206,7 +210,6 @@ class _LeaveRequestViewState extends State<PartialLeaveRequestView> {
                         "Partial Day Leave Request",
                         style: TextStyle(
                           fontSize: 25,
-                          // fontWeight: FontWeight.bold,
                           letterSpacing: 0.2,
                           color: Colors.black,
                           shadows: [

@@ -47,7 +47,7 @@ class EditDocumentsScreen extends StatelessWidget {
           style: TextStyle(color: Colors.white),
         ),
         centerTitle: true,
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: Colors.blue.shade700,
         elevation: 0,
       ),
       body: Obx(() {

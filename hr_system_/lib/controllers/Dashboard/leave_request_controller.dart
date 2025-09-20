@@ -2,12 +2,11 @@ import 'dart:io';
 import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
-import '../../app_config.dart'; // ← عدّل المسار حسب مشروعك
+import '../../app_config.dart';
 
 class LeaveRequestController {
-  /// يبني URI آمنًا اعتمادًا على AppConfig.baseUrl + path
   Uri _u(String path) {
-    final b = Uri.parse(AppConfig.baseUrl); // مثال: http://192.168.1.158/api
+    final b = Uri.parse(AppConfig.baseUrl);
     final basePath =
         b.path.endsWith('/')
             ? b.path.substring(0, b.path.length - 1)

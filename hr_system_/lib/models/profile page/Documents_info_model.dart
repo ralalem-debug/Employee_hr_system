@@ -1,3 +1,5 @@
+import 'package:hr_system_/app_config.dart';
+
 class DocumentsModel {
   final String cv;
   final String universityCertificate;
@@ -20,12 +22,12 @@ class DocumentsModel {
   });
 
   factory DocumentsModel.fromJson(Map<String, dynamic> j) {
-    const baseUrl = "http://192.168.1.158"; // عدّل حسب السيرفر عندك
+    final base = AppConfig.baseUrl.replaceFirst('/api', '');
 
     String buildUrl(dynamic value) {
       if (value == null || (value is String && value.isEmpty)) return "";
       final str = value.toString();
-      return str.startsWith("http") ? str : "$baseUrl$str";
+      return str.startsWith("http") ? str : "$base$str";
     }
 
     return DocumentsModel(

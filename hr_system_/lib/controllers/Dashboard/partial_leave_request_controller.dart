@@ -31,7 +31,7 @@ class LeaveRequestController {
 
   // يبني URI آمنًا اعتمادًا على AppConfig.baseUrl + path
   Uri _u(String path) {
-    final b = Uri.parse(AppConfig.baseUrl); // مثلا: http://192.168.1.158/api
+    final b = Uri.parse(AppConfig.baseUrl); // مثلا: http://192.168.1./api
     final basePath =
         b.path.endsWith('/')
             ? b.path.substring(0, b.path.length - 1)

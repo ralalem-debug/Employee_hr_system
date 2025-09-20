@@ -78,7 +78,7 @@ class _EditPersonalInfoScreenState extends State<EditPersonalInfoScreen> {
           style: TextStyle(color: Color.fromARGB(255, 255, 255, 255)),
         ),
         centerTitle: true,
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: Colors.blue.shade700,
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -123,7 +123,7 @@ class _EditPersonalInfoScreenState extends State<EditPersonalInfoScreen> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    backgroundColor: Colors.blueAccent,
+                    backgroundColor: Colors.blue.shade700,
                   ),
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {

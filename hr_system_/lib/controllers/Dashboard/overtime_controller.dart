@@ -23,7 +23,7 @@ class OvertimeController extends GetxController {
   Future<String?> _getToken() => storage.read(key: 'auth_token');
 
   Uri _u(String path) {
-    final b = Uri.parse(AppConfig.baseUrl); // مثال: http://192.168.1.158/api
+    final b = Uri.parse(AppConfig.baseUrl);
     final basePath =
         b.path.endsWith('/') ? b.path.substring(0, b.path.length - 1) : b.path;
     final addPath = path.startsWith('/') ? path.substring(1) : path;

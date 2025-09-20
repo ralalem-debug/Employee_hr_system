@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:hr_system_/app_config.dart';
 import 'package:hr_system_/controllers/calender_holiday_controller.dart';
 import 'package:hr_system_/models/calendar_holiday_model.dart';
 import 'package:hr_system_/views/Dashboard/break_screen.dart';
@@ -71,7 +72,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
       final employeeId = Uri.encodeComponent(rawEmployeeId);
       final url = Uri.parse(
-        'http://192.168.1.158/api/employee/get-performance/$employeeId',
+        '${AppConfig.baseUrl}/employee/get-performance/$employeeId',
       );
 
       final res = await http.get(

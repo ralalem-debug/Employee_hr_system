@@ -4,7 +4,6 @@ import 'dart:io';
 import 'dart:developer' as dev;
 import 'package:hr_system_/app_config.dart';
 import 'package:http_parser/http_parser.dart';
-
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
@@ -144,49 +143,6 @@ class SelfieController extends GetxController {
     );
   }
 
-  Future<bool> _uploadOne(File f, String userId, int idx, String token) async {
-    final uri = Uri.parse("http://192.168.1.164:8001/m/v1/users/$userId/refs");
-    final req = http.MultipartRequest('POST', uri);
-    req.files.add(await _toPart(f));
-    req.headers['accept'] = 'application/json';
-    req.headers['Authorization'] = 'Bearer $token';
-
-    dev.log('POST (single $idx/${idx}) $uri', name: 'SelfieController');
-
-    final client = http.Client();
-    try {
-      final res = await client.send(req).timeout(const Duration(minutes: 3));
-      final body = await res.stream.bytesToString();
-      dev.log(
-        'Single $idx status: ${res.statusCode}',
-        name: 'SelfieController',
-      );
-      dev.log(
-        'Single $idx body: ${body.length > 800 ? body.substring(0, 800) + '...' : body}',
-        name: 'SelfieController',
-      );
-      if (res.statusCode == 200) return true;
-
-      try {
-        final dec = jsonDecode(body);
-        errorMessage = dec is Map ? (dec['message']?.toString() ?? body) : body;
-      } catch (_) {
-        errorMessage = body;
-      }
-      return false;
-    } on TimeoutException {
-      errorMessage = 'Timeout while uploading image $idx.';
-      dev.log(errorMessage!, name: 'SelfieController');
-      return false;
-    } on SocketException {
-      errorMessage = 'Network error while uploading image $idx.';
-      dev.log(errorMessage!, name: 'SelfieController');
-      return false;
-    } finally {
-      client.close();
-    }
-  }
-
   Future<bool> uploadSelfies(List<File> images, String token) async {
     isLoading.value = true;
     errorMessage = null;
@@ -205,22 +161,56 @@ class SelfieController extends GetxController {
         }
       }
 
-      bool allOk = true;
+      // إنشاء URI لرفع الصور
+      final uri = Uri.parse(
+        "http://192.168.1.164:8001/m/v1/users/$userId/refs",
+      );
+      final req = http.MultipartRequest('POST', uri);
+      req.headers['accept'] = 'application/json';
+      req.headers['Authorization'] = 'Bearer $token';
+
+      // إضافة الصور إلى الطلب
       for (int i = 0; i < images.length; i++) {
         final f = images[i];
-        final ok = await _uploadOne(f, userId, i + 1, token);
-        if (!ok) {
-          allOk = false;
-          break;
-        }
+        req.files.add(await _toPart(f)); // إضافة كل صورة
       }
 
-      isLoading.value = false;
-      if (allOk) {
-        await storage.write(key: 'selfie_done', value: 'true');
-        return true;
-      } else {
+      // إرسال الطلب
+      final client = http.Client();
+      try {
+        final res = await client.send(req).timeout(const Duration(minutes: 3));
+        final body = await res.stream.bytesToString();
+        dev.log('Status: ${res.statusCode}', name: 'SelfieController');
+        dev.log(
+          'Response body: ${body.length > 800 ? body.substring(0, 800) + '...' : body}',
+          name: 'SelfieController',
+        );
+
+        if (res.statusCode == 200) {
+          isLoading.value = false;
+          await storage.write(key: 'selfie_done', value: 'true');
+          return true;
+        }
+
+        // في حالة فشل رفع الصور
+        try {
+          final dec = jsonDecode(body);
+          errorMessage =
+              dec is Map ? (dec['message']?.toString() ?? body) : body;
+        } catch (_) {
+          errorMessage = body;
+        }
         return false;
+      } on TimeoutException {
+        errorMessage = 'Timeout while uploading selfies.';
+        dev.log(errorMessage!, name: 'SelfieController');
+        return false;
+      } on SocketException {
+        errorMessage = 'Network error while uploading selfies.';
+        dev.log(errorMessage!, name: 'SelfieController');
+        return false;
+      } finally {
+        client.close();
       }
     } catch (e, st) {
       isLoading.value = false;

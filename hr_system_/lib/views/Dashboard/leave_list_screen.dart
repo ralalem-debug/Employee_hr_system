@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hr_system_/app_config.dart';
 import 'package:hr_system_/models/Dashboard/leave_request_list_model.dart';
 import '../../controllers/Dashboard/leave_list_controller.dart';
 import '../employee_nav_bar.dart';
@@ -320,7 +321,7 @@ class _LeavesListViewState extends State<LeavesListView> {
                                   builder:
                                       (ctx) => Dialog(
                                         child: Image.network(
-                                          "http://192.168.1.158/${req.documentUrl}",
+                                          "${AppConfig.baseUrl.replaceFirst('/api', '')}/${req.documentUrl}",
                                           fit: BoxFit.contain,
                                           errorBuilder:
                                               (_, __, ___) => const Icon(
@@ -374,7 +375,7 @@ class _LeavesListViewState extends State<LeavesListView> {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(6),
                       child: Image.network(
-                        "http://192.168.1.158/${req.documentUrl}",
+                        "${AppConfig.baseUrl.replaceFirst('/api', '')}/${req.documentUrl}",
                         height: 120,
                         fit: BoxFit.contain,
                         errorBuilder:

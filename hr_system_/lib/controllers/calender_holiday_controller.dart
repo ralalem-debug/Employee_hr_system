@@ -8,7 +8,7 @@ class HolidayEventsController {
   static const _timeout = Duration(seconds: 15);
 
   Uri _u(String path) {
-    final b = Uri.parse(AppConfig.baseUrl); // ex: http://192.168.1.158/api
+    final b = Uri.parse(AppConfig.baseUrl);
     final basePath =
         b.path.endsWith('/') ? b.path.substring(0, b.path.length - 1) : b.path;
     final addPath = path.startsWith('/') ? path.substring(1) : path;
@@ -17,9 +17,12 @@ class HolidayEventsController {
 
   Future<List<HolidayEventModel>> fetchEvents(String jwtToken) async {
     try {
+      final url = _u('/attendance/employee/calendar');
+      print("📅 Fetching events from: $url");
+
       final res = await http
           .get(
-            _u('/attendance/employee/calendar'),
+            url,
             headers: {
               'Authorization': 'Bearer $jwtToken',
               'Accept': 'application/json',
@@ -27,9 +30,19 @@ class HolidayEventsController {
           )
           .timeout(_timeout);
 
+      print("📥 Response [${res.statusCode}]: ${res.body}");
+
       if (res.statusCode == 200) {
-        final List<dynamic> jsonList = jsonDecode(res.body);
-        return jsonList.map((e) => HolidayEventModel.fromJson(e)).toList();
+        final decoded = jsonDecode(res.body);
+
+        if (decoded is List) {
+          return decoded.map((e) => HolidayEventModel.fromJson(e)).toList();
+        } else if (decoded is Map && decoded.containsKey("data")) {
+          final List<dynamic> jsonList = decoded["data"];
+          return jsonList.map((e) => HolidayEventModel.fromJson(e)).toList();
+        } else {
+          throw Exception("Unexpected response format: $decoded");
+        }
       } else if (res.statusCode == 401) {
         throw Exception('Unauthorized. Please login again.');
       } else {

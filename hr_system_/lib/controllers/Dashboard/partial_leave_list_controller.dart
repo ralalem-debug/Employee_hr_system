@@ -7,18 +7,15 @@ import 'package:hr_system_/models/Dashboard/partial_leave_list.dart';
 class PartialLeaveListController {
   static const Duration _timeout = Duration(seconds: 20);
 
-  // يبني URI بالاعتماد على AppConfig.baseUrl + path + (اختياري) query
   Uri _u(String path, [Map<String, String>? qp]) {
-    final b = Uri.parse(AppConfig.baseUrl); // مثال: http://192.168.1.158/api
-    final basePath =
-        b.path.endsWith('/')
-            ? b.path.substring(0, b.path.length - 1)
-            : b.path; // "/api"
-    final addPath =
-        path.startsWith('/') ? path.substring(1) : path; // "employee/..."
+    final b = Uri.parse(AppConfig.baseUrl);
+    // تأكد أن baseUrl يحتوي "http://IP:5000/api"
+
+    // نظف الـ path
+    final addPath = path.startsWith('/') ? path.substring(1) : path;
     return b.replace(
-      path: '$basePath/$addPath', // "/api/employee/..."
-      queryParameters: (qp != null && qp.isNotEmpty) ? qp : null,
+      path: "${b.path.replaceAll(RegExp(r'/$'), '')}/$addPath",
+      queryParameters: qp?.isNotEmpty == true ? qp : null,
     );
   }
 

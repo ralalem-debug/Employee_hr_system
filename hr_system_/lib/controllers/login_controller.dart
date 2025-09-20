@@ -32,8 +32,19 @@ class LoginController {
     passwordController.dispose();
   }
 
+  // helper صغير لاستخراج أول claim غير فاضي
+  String? _claim(Map<String, dynamic> m, List<String> keys) {
+    for (final k in keys) {
+      final v = m[k];
+      if (v == null) continue;
+      final s = v.toString().trim();
+      if (s.isNotEmpty) return s;
+    }
+    return null;
+  }
+
   Future<LoginResult> login() async {
-    final input = emailOrUserController.text.trim(); // Username أو Email
+    final input = emailOrUserController.text.trim();
     final password = passwordController.text.trim();
 
     if (input.isEmpty || password.isEmpty) {
@@ -42,6 +53,7 @@ class LoginController {
 
     try {
       final uri = Uri.parse('${AppConfig.baseUrl}/Auth/login');
+      print("🔗 Login URL: ${AppConfig.baseUrl}/Auth/login");
 
       final response = await http
           .post(
@@ -67,7 +79,6 @@ class LoginController {
 
         final token = data['token'] as String?;
         final isFirstLogin = (data['isFirstLogin'] as bool?) ?? false;
-
         if (token == null || token.isEmpty) {
           return LoginResult(
             success: false,
@@ -75,25 +86,72 @@ class LoginController {
           );
         }
 
-        // استخرج الدور من الـ JWT مع دعم أكثر من شكل
+        // نفك التوكن ونستخرج role + userId + employeeId
         String? role;
+        String? userId;
+        String? employeeId;
+        String? displayName;
+
         try {
-          final decodedToken = JwtDecoder.decode(token);
-          dynamic rawRole =
-              decodedToken['role'] ??
-              decodedToken['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ??
-              decodedToken['roles'];
+          final t = JwtDecoder.decode(token);
+
+          // role (يدعم أكثر من شكل)
+          final rawRole =
+              t['role'] ??
+              t['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ??
+              t['roles'];
           if (rawRole is List && rawRole.isNotEmpty) {
             role = rawRole.first.toString();
           } else if (rawRole is String) {
             role = rawRole;
           }
+
+          // userId من أشهر المفاتيح المعروفة
+          userId = _claim(t, [
+            'sub',
+            'userId',
+            'uid',
+            'nameid',
+            'nameId',
+            'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier',
+            'http://schemas.microsoft.com/ws/2008/06/identity/claims/nameidentifier',
+          ]);
+
+          // employeeId لو السيرفر بيحط claim له
+          employeeId = _claim(t, ['employeeId', 'empId', 'employee_id']);
+
+          // اسم للعرض (اختياري)
+          displayName = _claim(t, [
+            'name',
+            'unique_name',
+            'preferred_username',
+            'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name',
+          ]);
         } catch (_) {
-          // تجاهل لو فشل فك التشفير
+          // تجاهل أخطاء فك التوكن
         }
 
-        // ✅ تخزين التوكن
+        // خزّن التوكن دائماً
         await _secureStorage.write(key: "auth_token", value: token);
+
+        // خزّن user_id لاستخدامه مع office-status
+        if (userId != null) {
+          await _secureStorage.write(key: "user_id", value: userId);
+          print("✅ saved user_id: $userId");
+        }
+
+        // خزّن employee_id إن وُجد (مفيد لبعض الـ APIs)
+        if (employeeId != null) {
+          await _secureStorage.write(key: "employee_id", value: employeeId);
+          print("✅ saved employee_id: $employeeId");
+        }
+
+        if (displayName != null) {
+          await _secureStorage.write(key: "display_name", value: displayName);
+        }
+        if (role != null) {
+          await _secureStorage.write(key: "role", value: role);
+        }
 
         return LoginResult(
           success: true,
@@ -103,7 +161,6 @@ class LoginController {
           role: role,
         );
       } else {
-        // حاول نقرأ رسالة الخطأ من السيرفر لو موجودة
         String serverMsg = response.body;
         try {
           final m = jsonDecode(response.body);
@@ -123,13 +180,12 @@ class LoginController {
     }
   }
 
-  /// ✅ استرجاع التوكن
-  Future<String?> getToken() async {
-    return _secureStorage.read(key: "auth_token");
-  }
-
-  /// ✅ حذف التوكن (تسجيل خروج)
+  Future<String?> getToken() => _secureStorage.read(key: "auth_token");
   Future<void> logout() async {
     await _secureStorage.delete(key: "auth_token");
+    await _secureStorage.delete(key: "user_id");
+    await _secureStorage.delete(key: "employee_id");
+    await _secureStorage.delete(key: "display_name");
+    await _secureStorage.delete(key: "role");
   }
 }

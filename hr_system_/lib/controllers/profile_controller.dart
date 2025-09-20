@@ -21,7 +21,6 @@ class ProfileController extends GetxController {
 
   final String baseUrl = AppConfig.baseUrl;
 
-  // ✅ Secure storage
   final storage = const FlutterSecureStorage();
 
   Future<Map<String, String>> _getAuthData() async {
@@ -37,14 +36,21 @@ class ProfileController extends GetxController {
     try {
       final auth = await _getAuthData();
       final token = auth["token"]!;
-      final employeeId = auth["employeeId"]!;
+      final employeeId = auth["employeeId"] ?? "";
+      print("🔑 Token: $token");
+      print("🆔 EmployeeId (not used in API calls): $employeeId");
 
-      // --- Personal Info ---
       final personalResponse = await http.get(
-        Uri.parse(
-          '$baseUrl/api/employee/get-personal-info?employeeId=$employeeId',
-        ),
-        headers: {'Authorization': 'Bearer $token'},
+        Uri.parse('$baseUrl/employee/get-personal-info'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
+
+      print("📥 Personal Info URL: $baseUrl/employee/get-personal-info");
+      print(
+        "📥 Response: ${personalResponse.statusCode} => ${personalResponse.body}",
       );
 
       if (personalResponse.statusCode == 200) {
@@ -59,10 +65,12 @@ class ProfileController extends GetxController {
 
       // --- Professional Info ---
       final professionalResponse = await http.get(
-        Uri.parse(
-          '$baseUrl/api/employee/get-professional-info?employeeId=$employeeId',
-        ),
+        Uri.parse('$baseUrl/employee/get-professional-info'),
         headers: {'Authorization': 'Bearer $token'},
+      );
+
+      print(
+        "📥 Professional Info Response: ${professionalResponse.statusCode} => ${professionalResponse.body}",
       );
 
       if (professionalResponse.statusCode == 200) {
@@ -92,10 +100,12 @@ class ProfileController extends GetxController {
 
       // --- Documents ---
       final docsResponse = await http.get(
-        Uri.parse(
-          '$baseUrl/api/employee/get-employee-documents?employeeId=$employeeId',
-        ),
+        Uri.parse('$baseUrl/employee/get-employee-documents'),
         headers: {'Authorization': 'Bearer $token'},
+      );
+
+      print(
+        "📥 Documents Response: ${docsResponse.statusCode} => ${docsResponse.body}",
       );
 
       if (docsResponse.statusCode == 200) {
@@ -106,7 +116,7 @@ class ProfileController extends GetxController {
         throw Exception("Error loading documents: ${docsResponse.body}");
       }
 
-      // ✅ جلب صورة المستخدم مع البروفايل
+      // --- User Image ---
       await fetchUserImage();
     } catch (e) {
       error.value = e.toString();
@@ -116,7 +126,6 @@ class ProfileController extends GetxController {
     isLoading.value = false;
   }
 
-  // ✅ تحديث المعلومات الشخصية
   Future<bool> updatePersonalInfo(PersonalInfoModel model) async {
     isLoading.value = true;
     error.value = null;
@@ -149,7 +158,7 @@ class ProfileController extends GetxController {
       }
 
       final res = await http.put(
-        Uri.parse('$baseUrl/api/employee/update-personal-info'),
+        Uri.parse('$baseUrl/employee/update-personal-info'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -158,7 +167,9 @@ class ProfileController extends GetxController {
       );
 
       if (res.statusCode == 200) {
-        await fetchProfile();
+        // ✅ عدل البيانات محلياً بدل ما تعيد تحميل كامل
+        personalInfo.value = model;
+        personalInfo.refresh();
         return true;
       } else {
         print("❌ Personal update failed: ${res.statusCode} => ${res.body}");
@@ -179,7 +190,7 @@ class ProfileController extends GetxController {
     final token = auth["token"]!;
 
     final res = await http.get(
-      Uri.parse('$baseUrl/api/company/departments'),
+      Uri.parse('$baseUrl/company/departments'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
@@ -202,7 +213,7 @@ class ProfileController extends GetxController {
     final token = auth["token"]!;
 
     final res = await http.get(
-      Uri.parse('$baseUrl/api/company/JobTitles'),
+      Uri.parse('$baseUrl/company/JobTitles'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
@@ -238,7 +249,7 @@ class ProfileController extends GetxController {
       final employeeId = auth["employeeId"]!;
 
       final res = await http.put(
-        Uri.parse('$baseUrl/api/employee/update-professional-info'),
+        Uri.parse('$baseUrl/employee/update-professional-info'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -284,7 +295,7 @@ class ProfileController extends GetxController {
       });
 
       final response = await dio.Dio().post(
-        "$baseUrl/api/Auth/upload-user-image",
+        "$baseUrl/Auth/upload-user-image",
         data: formData,
         options: dio.Options(
           headers: {
@@ -317,7 +328,7 @@ class ProfileController extends GetxController {
       }
 
       final response = await dio.Dio().get(
-        "$baseUrl/api/Auth/user-image",
+        "$baseUrl/Auth/user-image",
         queryParameters: {"userId": userId},
         options: dio.Options(
           headers: {
@@ -327,18 +338,41 @@ class ProfileController extends GetxController {
         ),
       );
 
-      print("📷 Full User Image Response: ${response.data}");
+      print(
+        "📷 User Image Response: ${response.statusCode} => ${response.data}",
+      );
 
       if (response.statusCode == 200) {
-        final imageUrl = response.data is String ? response.data : null;
+        String? imageUrl;
 
-        if (imageUrl != null && personalInfo.value != null) {
-          personalInfo.value = personalInfo.value!.copyWith(
-            imageUrl:
-                imageUrl.startsWith("http") ? imageUrl : "$baseUrl$imageUrl",
-          );
-          personalInfo.refresh();
+        // التحقق من نوع الرد
+        if (response.data is String) {
+          imageUrl = response.data as String;
+        } else if (response.data is Map<String, dynamic>) {
+          imageUrl = response.data["url"] ?? response.data["imageUrl"];
         }
+
+        // إذا كانت الصورة موجودة
+        if (imageUrl != null && imageUrl.isNotEmpty) {
+          if (personalInfo.value != null) {
+            // تعديل الـ base URL حسب الحاجة (إزالة "/api" إذا كانت موجودة)
+            String finalImageUrl =
+                imageUrl.startsWith("http")
+                    ? imageUrl
+                    : "$baseUrl$imageUrl".replaceFirst('/api', '');
+
+            personalInfo.value = personalInfo.value!.copyWith(
+              imageUrl: finalImageUrl,
+            );
+            personalInfo.refresh();
+          }
+        }
+      } else if (response.statusCode == 404) {
+        print("ℹ️ No user image found (404)");
+      } else {
+        print(
+          "❌ Unexpected response: ${response.statusCode} => ${response.data}",
+        );
       }
     } catch (e) {
       print("❌ fetchUserImage error: $e");
@@ -360,7 +394,7 @@ class ProfileController extends GetxController {
       });
 
       final response = await dio.Dio().post(
-        "$baseUrl/api/employee/upload-employee-documents",
+        "$baseUrl/employee/upload-employee-documents",
         data: formData,
         options: dio.Options(
           headers: {

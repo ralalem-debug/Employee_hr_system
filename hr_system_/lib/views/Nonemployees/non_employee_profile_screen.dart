@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:http/http.dart' as http;
+import 'package:hr_system_/app_config.dart'; // ✅ لإحضار baseUrl
 
 import '../../controllers/nonemployee_profile_controller.dart'
     show ProfileController;
@@ -30,8 +31,6 @@ class _NonEmployeeProfileScreenState extends State<NonEmployeeProfileScreen> {
   final phone = TextEditingController();
 
   File? cvFile;
-
-  final String baseUrl = "http://192.168.1.158"; // ✅ العنوان الصحيح
 
   @override
   void initState() {
@@ -64,7 +63,7 @@ class _NonEmployeeProfileScreenState extends State<NonEmployeeProfileScreen> {
   String getFullCvUrl(String? cvPath) {
     if (cvPath == null || cvPath.isEmpty) return "";
     if (cvPath.startsWith("http")) return cvPath;
-    return "$baseUrl$cvPath";
+    return "${AppConfig.baseUrl}$cvPath";
   }
 
   /// ✅ فتح CV
@@ -78,12 +77,11 @@ class _NonEmployeeProfileScreenState extends State<NonEmployeeProfileScreen> {
     }
   }
 
-  /// ✅ تحميل CV (ينزل في Downloads للأندرويد و Documents للـ iOS)
+  /// ✅ تحميل CV
   Future<void> _downloadCV(String cvPath) async {
     try {
       final url = getFullCvUrl(cvPath);
 
-      // طلب صلاحية
       if (Platform.isAndroid) {
         var status = await Permission.storage.request();
         if (!status.isGranted) {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/date_symbol_data_local.dart';
 import 'package:hr_system_/app_config.dart';
+import 'package:hr_system_/views/debugdiscovery.dart';
 import 'views/splash_screen.dart';
 import 'views/login_screen.dart';
 import 'views/home_screen.dart';
@@ -15,10 +15,9 @@ import 'views/settings/privacypolicy.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await initializeDateFormatting('en', null);
 
+  await debugDiscovery();
   await AppConfig.init();
-
   runApp(const OnsetWayApp());
 }
 

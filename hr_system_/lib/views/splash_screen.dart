@@ -35,7 +35,7 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _initApp() async {
-    await Future.delayed(const Duration(seconds: 2)); // خلي الأنيميشن يبين
+    await Future.delayed(const Duration(seconds: 2));
 
     if (AppConfig.baseUrl.isEmpty) {
       Get.offAll(

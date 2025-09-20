@@ -74,7 +74,7 @@ class _EditProfessionalInfoScreenState
           style: TextStyle(color: Color.fromARGB(255, 255, 255, 255)),
         ),
         centerTitle: true,
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: Colors.blue.shade700,
         elevation: 0,
       ),
       body: Padding(
