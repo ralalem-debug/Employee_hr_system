@@ -163,7 +163,7 @@ class SelfieController extends GetxController {
 
       // إنشاء URI لرفع الصور
       final uri = Uri.parse(
-        "http://192.168.1.164:8001/m/v1/users/$userId/refs",
+        "http://192.168.1.247:8001/m/v1/users/$userId/refs",
       );
       final req = http.MultipartRequest('POST', uri);
       req.headers['accept'] = 'application/json';

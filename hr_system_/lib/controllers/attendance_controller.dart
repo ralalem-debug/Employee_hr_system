@@ -1,8 +1,6 @@
 import 'dart:convert';
-import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import '../app_config.dart';
 import '../models/attendance_model.dart';
 
 class AttendanceController {
@@ -11,83 +9,85 @@ class AttendanceController {
 
   Future<String?> _getToken() => storage.read(key: 'auth_token');
 
-  Uri _u(String path) {
-    final b = Uri.parse(AppConfig.baseUrl);
-    final basePath =
-        b.path.endsWith('/') ? b.path.substring(0, b.path.length - 1) : b.path;
-    final addPath = path.startsWith('/') ? path.substring(1) : path;
-    return b.replace(path: '$basePath/$addPath');
-  }
-
   Map<String, String> _headers(String? token) => {
     'Accept': 'application/json',
     if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
   };
 
-  Future<String?> fetchAndSaveUserId() async {
-    final token = await _getToken();
-    if (token == null || token.isEmpty) return null;
-
+  /// ✅ دالة بسيطة ترجع إذا الموظف موجود أو لا
+  Future<bool> isAtOffice(String userId) async {
     try {
       final res = await http
-          .get(_u('/Auth/myId'), headers: _headers(token))
+          .get(Uri.parse("http://192.168.1.247:8001/at-office/$userId"))
           .timeout(_timeout);
 
       if (res.statusCode == 200) {
         final json = jsonDecode(res.body);
-        final userId = json['id'] ?? json['userId'];
-        if (userId != null) {
-          await storage.write(key: 'user_id', value: userId.toString());
-          print("✅ Saved userId: $userId");
-          return userId.toString();
+        if (json is Map<String, dynamic> && json.containsKey("isAtOffice")) {
+          return json["isAtOffice"] == true;
         }
       }
-      print("⚠️ Failed to fetch userId: ${res.body}");
-      return null;
+      return false;
     } catch (e) {
-      print("❌ Exception fetchAndSaveUserId: $e");
-      return null;
+      print("❌ Error isAtOffice: $e");
+      return false;
     }
   }
 
-  Future<AttendanceModel?> checkAtOffice() async {
-    String? userId = await storage.read(key: 'user_id');
+  Future<AttendanceModel?> getCheckInOutTime() async {
     final token = await _getToken();
-
-    if (userId == null || userId.isEmpty) {
-      userId = await fetchAndSaveUserId();
-    }
-
-    if (userId == null || userId.isEmpty) {
-      print("❌ No userId available");
-      return null;
-    }
-
     try {
-      final url = "http://192.168.1.247:8001/at-office/$userId";
-      print("📡 Calling office-status API: $url");
-
-      final headers = {'Accept': 'application/json'};
-      if (token != null && token.isNotEmpty) {
-        headers['Authorization'] = 'Bearer $token';
-      }
-
       final res = await http
-          .get(Uri.parse(url), headers: headers)
+          .get(
+            Uri.parse(
+              "http://192.168.1.158:5000/api/attendance/checkInOut-time",
+            ),
+            headers: _headers(token),
+          )
           .timeout(_timeout);
-
-      print("🔎 Response status: ${res.statusCode}");
-      print("🔎 Response body: ${res.body}");
 
       if (res.statusCode == 200) {
         final json = jsonDecode(res.body);
         return AttendanceModel.fromJson(json);
-      } else {
-        return null;
       }
-    } catch (e) {
-      print("❌ Exception checkAtOffice: $e");
       return null;
+    } catch (e) {
+      print("❌ Error getCheckInOutTime: $e");
+      return null;
+    }
+  }
+
+  Future<bool> doCheckIn() async {
+    final token = await _getToken();
+    try {
+      final res = await http
+          .post(
+            Uri.parse("http://192.168.1.158:5000/api/attendance/checkin"),
+            headers: _headers(token),
+          )
+          .timeout(_timeout);
+
+      return res.statusCode == 200;
+    } catch (e) {
+      print("❌ Error doCheckIn: $e");
+      return false;
+    }
+  }
+
+  Future<bool> doCheckOut() async {
+    final token = await _getToken();
+    try {
+      final res = await http
+          .post(
+            Uri.parse("http://192.168.1.158:5000/api/attendance/checkout"),
+            headers: _headers(token),
+          )
+          .timeout(_timeout);
+
+      return res.statusCode == 200;
+    } catch (e) {
+      print("❌ Error doCheckOut: $e");
+      return false;
     }
   }
 }

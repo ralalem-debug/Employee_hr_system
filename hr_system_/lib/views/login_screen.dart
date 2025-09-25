@@ -49,25 +49,29 @@ class _LoginScreenState extends State<LoginScreen>
     setState(() => _isLoading = false);
 
     if (result.success) {
-      if (result.isFirstLogin && result.role?.toLowerCase() == "employee") {
-        Get.offAll(
-          () => ChangePasswordScreen(
-            token: result.token ?? "",
-            isFirstLogin: result.isFirstLogin,
-          ),
-        );
-      } else if (result.role?.toLowerCase() == "employee") {
-        Get.offAll(() => const HomeScreen());
-      } else {
+      final role = result.role?.toLowerCase();
+
+      if (role == "employee") {
+        if (result.isFirstLogin) {
+          Get.offAll(
+            () => ChangePasswordScreen(
+              token: result.token ?? "",
+              isFirstLogin: result.isFirstLogin,
+            ),
+          );
+        } else {
+          Get.offAll(() => const HomeScreen());
+        }
+      } else if (role == "nonemployee") {
         Get.offAll(() => const NonEmployeeHomeScreen());
+      } else {
+        Get.snackbar(
+          "Error",
+          "Unknown role: ${result.role}",
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.orange.shade100,
+        );
       }
-    } else {
-      Get.snackbar(
-        "Error",
-        result.message,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade100,
-      );
     }
   }
 

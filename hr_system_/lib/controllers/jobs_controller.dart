@@ -3,13 +3,14 @@ import 'dart:convert';
 import 'dart:async';
 import 'package:get/get.dart';
 import 'package:hr_system_/models/jobs/job_mode.dart';
+import 'package:hr_system_/models/non_employee.dart/upcoming_interview.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../app_config.dart';
 
 class JobsController extends GetxController {
   final _storage = const FlutterSecureStorage();
-
+  var upcomingInterviews = <UpcomingInterview>[].obs;
   var isLoading = false.obs;
   var jobs = <JobModel>[].obs;
   var appliedJobIds = <String>{}.obs;
@@ -125,6 +126,38 @@ class JobsController extends GetxController {
     } catch (e) {
       Get.snackbar("Network", "Failed: $e");
       return null;
+    }
+  }
+
+  Future<void> fetchUpcomingInterview() async {
+    final token = await _getToken();
+    if (token == null || token.isEmpty) {
+      Get.snackbar("Error", "Missing token. Please login again.");
+      return;
+    }
+
+    try {
+      final res = await http
+          .get(_u('/nonemployees/upcoming'), headers: _headers(token))
+          .timeout(_timeout);
+
+      if (res.statusCode == 200) {
+        final List data = jsonDecode(res.body);
+        upcomingInterviews.assignAll(
+          data.map((e) => UpcomingInterview.fromJson(e)).toList(),
+        );
+      } else if (res.statusCode == 401) {
+        Get.snackbar("Unauthorized", "Please login again.");
+      } else {
+        Get.snackbar(
+          "Error",
+          "Failed to load upcoming interviews (${res.statusCode})",
+        );
+      }
+    } on TimeoutException {
+      Get.snackbar("Timeout", "Server did not respond in time.");
+    } catch (e) {
+      Get.snackbar("Network", "Failed: $e");
     }
   }
 }

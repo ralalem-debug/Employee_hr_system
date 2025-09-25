@@ -32,7 +32,9 @@ class SettingsScreen extends StatelessWidget {
     return WillPopScope(
       onWillPop: () async {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => EmployeeNavBar(currentIndex: 0)),
+          MaterialPageRoute(
+            builder: (_) => const EmployeeNavBar(currentIndex: 0),
+          ),
         );
         return false;
       },
@@ -41,37 +43,39 @@ class SettingsScreen extends StatelessWidget {
         appBar: AppBar(
           elevation: 0,
           backgroundColor: Colors.blue[700],
-          title: const Row(mainAxisAlignment: MainAxisAlignment.center),
+          title: const Text(""),
           centerTitle: true,
         ),
-        body: Column(
-          children: [
-            _headerCard(), // الهيدر
-            const SizedBox(height: 14),
+        body: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            children: [
+              _headerCard(), // الهيدر
+              const SizedBox(height: 14),
 
-            _sectionTitle("Account Settings"),
-            _settingTile("Edit profile", Icons.person_outline, () {
-              Get.toNamed('/profile');
-            }),
+              _sectionTitle("Account Settings"),
+              _settingTile("Edit profile", Icons.person_outline, () {
+                Get.toNamed('/profile');
+              }),
 
-            // _settingTile("Change password", Icons.lock_outline, () {
-            //   _goToChangePassword();
-            // }),
-            const SizedBox(height: 14),
-            _sectionTitle("More"),
-            _settingTile("About us", Icons.info_outline, () {
-              Get.toNamed('/aboutus');
-            }),
-            _settingTile("Privacy policy", Icons.privacy_tip_outlined, () {
-              Get.toNamed('/privacypolicy');
-            }),
+              const SizedBox(height: 14),
+              _sectionTitle("More"),
+              _settingTile("About us", Icons.info_outline, () {
+                Get.toNamed('/aboutus');
+              }),
+              _settingTile("Privacy policy", Icons.privacy_tip_outlined, () {
+                Get.toNamed('/privacypolicy');
+              }),
 
-            const SizedBox(height: 14),
-            _sectionTitle("Account"),
-            _settingTile("Logout", Icons.logout, () {
-              _logout();
-            }),
-          ],
+              const SizedBox(height: 14),
+              _sectionTitle("Account"),
+              _settingTile("Logout", Icons.logout, () {
+                _logout();
+              }),
+
+              const SizedBox(height: 30), // مساحة صغيرة بالنهاية
+            ],
+          ),
         ),
         bottomNavigationBar: const EmployeeNavBar(currentIndex: 4),
       ),
@@ -94,7 +98,14 @@ class SettingsScreen extends StatelessWidget {
         children: [
           Icon(Icons.settings, color: Colors.white, size: 40),
           SizedBox(width: 15),
-          Text("Settings", style: TextStyle(color: Colors.white, fontSize: 50)),
+          Text(
+            "Settings",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 36,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ],
       ),
     );

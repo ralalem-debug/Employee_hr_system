@@ -65,105 +65,105 @@ class _SignatureScreenState extends State<SignatureScreen> {
         foregroundColor: Colors.white,
       ),
       body: Obx(
-        () => Center(
-          child:
-              _controller.isLoading.value
-                  ? const CircularProgressIndicator()
-                  : Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text(
-                          "Welcome, Employee",
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
+        () =>
+            _controller.isLoading.value
+                ? const Center(child: CircularProgressIndicator())
+                : SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const Text(
+                        "Welcome, Employee",
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // صندوق التوقيع
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          border: Border.all(
+                            color: Colors.blueAccent,
+                            width: 2,
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Signature(
+                          controller: _sigCtrl,
+                          height: 200,
+                          backgroundColor: Colors.grey[200]!,
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+
+                      // الأزرار
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          OutlinedButton(
+                            onPressed: () => _sigCtrl.clear(),
+                            child: const Text("Clear"),
+                          ),
+                          const SizedBox(width: 18),
+                          ElevatedButton(
+                            onPressed: _submitSignature,
+                            child: const Text("Done"),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 30),
+
+                      // ملاحظة
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 13,
+                          horizontal: 15,
+                        ),
+                        margin: const EdgeInsets.only(top: 10),
+                        decoration: BoxDecoration(
+                          color: Colors.yellow[50],
+                          borderRadius: BorderRadius.circular(9),
+                          border: Border.all(
+                            color: Colors.amber.shade700,
+                            width: 1,
                           ),
                         ),
-                        const SizedBox(height: 16),
-
-                        // صندوق التوقيع
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.grey[200],
-                            border: Border.all(
-                              color: Colors.blueAccent,
-                              width: 2,
-                            ),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Signature(
-                            controller: _sigCtrl,
-                            height: 200,
-                            backgroundColor: Colors.grey[200]!,
-                          ),
-                        ),
-                        const SizedBox(height: 18),
-
-                        // الأزرار
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            OutlinedButton(
-                              onPressed: () => _sigCtrl.clear(),
-                              child: const Text("Clear"),
+                            const Icon(
+                              Icons.info_outline_rounded,
+                              color: Colors.amber,
+                              size: 28,
                             ),
-                            const SizedBox(width: 18),
-                            ElevatedButton(
-                              onPressed: _submitSignature,
-                              child: const Text("Done"),
+                            const SizedBox(width: 12),
+                            const Expanded(
+                              child: Text(
+                                "Please note:\n"
+                                "Your signature will be securely stored and used by the company "
+                                "for all official internal approvals and processes. "
+                                "Make sure your signature is clear and represents your authorization. "
+                                "If you have any concerns, please contact HR before submitting.",
+                                style: TextStyle(
+                                  color: Colors.black87,
+                                  fontSize: 15,
+                                  height: 1.5,
+                                ),
+                              ),
                             ),
                           ],
                         ),
-
-                        const SizedBox(height: 30),
-
-                        // ملاحظة
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 13,
-                            horizontal: 15,
-                          ),
-                          margin: const EdgeInsets.only(top: 10),
-                          decoration: BoxDecoration(
-                            color: Colors.yellow[50],
-                            borderRadius: BorderRadius.circular(9),
-                            border: Border.all(
-                              color: Colors.amber.shade700,
-                              width: 1,
-                            ),
-                          ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Icon(
-                                Icons.info_outline_rounded,
-                                color: Colors.amber,
-                                size: 28,
-                              ),
-                              const SizedBox(width: 12),
-                              const Expanded(
-                                child: Text(
-                                  "Please note:\n"
-                                  "Your signature will be securely stored and used by the company "
-                                  "for all official internal approvals and processes. "
-                                  "Make sure your signature is clear and represents your authorization. "
-                                  "If you have any concerns, please contact HR before submitting.",
-                                  style: TextStyle(
-                                    color: Colors.black87,
-                                    fontSize: 15,
-                                    height: 1.5,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
                   ),
-        ),
+                ),
       ),
     );
   }
