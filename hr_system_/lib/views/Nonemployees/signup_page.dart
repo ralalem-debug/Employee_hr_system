@@ -85,7 +85,52 @@ class _NonEmployeeSignUpPageState extends State<NonEmployeeSignUpPage> {
                         _buildTextField(nameA, "Full Name A"),
                         _buildTextField(email, "Email Address"),
                         _buildTextField(phone, "Phone number"),
-                        _buildTextField(gender, "Gender"),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: DropdownButtonFormField<String>(
+                            dropdownColor: const Color.fromARGB(
+                              255,
+                              255,
+                              255,
+                              255,
+                            ),
+                            value: gender.text.isEmpty ? null : gender.text,
+                            decoration: InputDecoration(
+                              labelText: "Gender",
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: const BorderSide(
+                                  color: Colors.blue,
+                                  width: 1.5,
+                                ),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                            ),
+                            items:
+                                ["Male", "Female"].map((String value) {
+                                  return DropdownMenuItem<String>(
+                                    value: value,
+                                    child: Text(value),
+                                  );
+                                }).toList(),
+                            onChanged: (newValue) {
+                              setState(() {
+                                gender.text = newValue!;
+                              });
+                            },
+                            validator:
+                                (value) =>
+                                    value == null || value.isEmpty
+                                        ? "Please select gender"
+                                        : null,
+                          ),
+                        ),
                         _buildTextField(city, "City"),
                         _buildTextField(password, "Password", isPassword: true),
                         _buildTextField(
@@ -204,7 +249,29 @@ class _NonEmployeeSignUpPageState extends State<NonEmployeeSignUpPage> {
                                     confirmPassword: confirmPassword.text,
                                     cvPath: _cvPath!,
                                   );
-                                  await _controller.signUp(model);
+
+                                  final success = await _controller.signUp(
+                                    model,
+                                  );
+
+                                  if (success) {
+                                    Get.snackbar(
+                                      "Success",
+                                      "Account created successfully!",
+                                      snackPosition: SnackPosition.BOTTOM,
+                                      backgroundColor: Colors.green.shade200,
+                                    );
+
+                                    // 🔥 يرجع مباشرةً لصفحة اللوج إن
+                                    Get.offAllNamed("/login");
+                                  } else {
+                                    Get.snackbar(
+                                      "Error",
+                                      "Sign up failed, please try again.",
+                                      snackPosition: SnackPosition.BOTTOM,
+                                      backgroundColor: Colors.red.shade200,
+                                    );
+                                  }
                                 } else {
                                   Get.snackbar(
                                     "Error",
@@ -214,6 +281,7 @@ class _NonEmployeeSignUpPageState extends State<NonEmployeeSignUpPage> {
                                   );
                                 }
                               },
+
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.transparent,
                                 shadowColor: Colors.transparent,

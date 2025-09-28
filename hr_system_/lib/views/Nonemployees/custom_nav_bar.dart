@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:hr_system_/views/Nonemployees/non_employee_home_page.dart';
 import 'package:hr_system_/views/Nonemployees/non_employee_notifications_screen.dart';
 import 'package:hr_system_/views/Nonemployees/settings.dart';
+import 'package:hr_system_/views/Nonemployees/assessment_available_screen.dart'; // ✅ استدعاء الصفحة الجديدة
 
 class CustomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -15,15 +16,15 @@ class CustomNavBar extends StatelessWidget {
         Get.offAll(() => const NonEmployeeHomeScreen());
         break;
       case 1:
-        Get.snackbar("Coming Soon", "Jobs page is under development");
+        Get.offAll(
+          () => const AssessmentAvailableScreen(),
+        ); // ✅ فتح صفحة Assessment
         break;
       case 2:
         Get.offAll(() => const NotificationsScreen());
-
         break;
       case 3:
         Get.offAll(() => const SettingsScreen());
-
         break;
     }
   }
