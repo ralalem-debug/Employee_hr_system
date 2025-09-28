@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hr_system_/app_config.dart';
+import 'package:hr_system_/views/Dashboard/coordinator_evaluation.dart';
 import 'package:hr_system_/views/debugdiscovery.dart';
 import 'views/splash_screen.dart';
 import 'views/login_screen.dart';
@@ -50,6 +51,11 @@ class OnsetWayApp extends StatelessWidget {
       ),
       initialRoute: '/',
       getPages: [
+        GetPage(
+          name: '/coordinator-evaluation',
+          page: () => const CoordinatorEvaluationPage(),
+        ),
+
         GetPage(name: '/', page: () => const SplashScreen()),
         GetPage(name: '/login', page: () => const LoginScreen()),
         GetPage(name: '/home', page: () => const HomeScreen()),

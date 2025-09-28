@@ -39,7 +39,10 @@ class CustomNavBar extends StatelessWidget {
       type: BottomNavigationBarType.fixed,
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: "HOME"),
-        BottomNavigationBarItem(icon: Icon(Icons.article_outlined), label: ""),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.article_outlined),
+          label: "Assessment",
+        ),
         BottomNavigationBarItem(
           icon: Icon(Icons.notifications_outlined),
           label: "Notification",

@@ -44,6 +44,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   int attendance = 0;
   int leaves = 0;
   int lateness = 0;
+  bool isCoordinator = false;
 
   final FlutterSecureStorage secureStorage = const FlutterSecureStorage();
 
@@ -52,6 +53,36 @@ class _DashboardScreenState extends State<DashboardScreen> {
     super.initState();
     _loadCalendarEvents();
     _fetchPerformance();
+    _checkCoordinatorRole();
+  }
+
+  Future<void> _checkCoordinatorRole() async {
+    final roles = await secureStorage.read(key: 'roles');
+
+    print("🔹 Raw role string: $roles");
+
+    List<String> parsedRoles = [];
+    if (roles != null) {
+      try {
+        final decoded = jsonDecode(roles);
+        if (decoded is List) {
+          parsedRoles = decoded.map((e) => e.toString().toLowerCase()).toList();
+        } else if (decoded is String) {
+          parsedRoles = [decoded.toLowerCase()];
+        }
+      } catch (_) {
+        parsedRoles = [roles.toLowerCase()];
+      }
+    }
+
+    setState(() {
+      isCoordinator =
+          parsedRoles.contains('coordinator') &&
+          parsedRoles.contains('employee');
+    });
+
+    print("✅ Parsed roles: $parsedRoles");
+    print("✅ isCoordinator = $isCoordinator");
   }
 
   Future<void> _fetchPerformance() async {
@@ -651,6 +682,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           Get.to(() => BreakScreen());
                         },
                       ),
+                      if (isCoordinator)
+                        _featureButton(
+                          Icons.group,
+                          "Evaluate Team",
+                          Colors.purple.shade600,
+                          onTap: () {
+                            Get.toNamed("/coordinator-evaluation");
+                          },
+                        ),
                     ],
                   ),
                 ),

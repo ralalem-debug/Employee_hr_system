@@ -49,9 +49,9 @@ class _LoginScreenState extends State<LoginScreen>
     setState(() => _isLoading = false);
 
     if (result.success) {
-      final role = result.role?.toLowerCase();
+      final roles = result.roles?.map((r) => r.toLowerCase()).toList() ?? [];
 
-      if (role == "employee") {
+      if (roles.contains("employee")) {
         if (result.isFirstLogin) {
           Get.offAll(
             () => ChangePasswordScreen(
@@ -62,12 +62,12 @@ class _LoginScreenState extends State<LoginScreen>
         } else {
           Get.offAll(() => const HomeScreen());
         }
-      } else if (role == "nonemployee") {
+      } else if (roles.contains("nonemployee")) {
         Get.offAll(() => const NonEmployeeHomeScreen());
       } else {
         Get.snackbar(
           "Error",
-          "Unknown role: ${result.role}",
+          "Unknown role(s): ${roles.join(", ")}",
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.orange.shade100,
         );
