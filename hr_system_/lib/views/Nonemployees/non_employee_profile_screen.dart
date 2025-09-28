@@ -5,7 +5,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:hr_system_/views/Nonemployees/non_employee_home_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:http/http.dart' as http;
 import 'package:hr_system_/app_config.dart';
 
@@ -77,37 +76,18 @@ class _NonEmployeeProfileScreenState extends State<NonEmployeeProfileScreen> {
     }
   }
 
-  /// ✅ تحميل CV
-  Future<void> _downloadCV(String cvPath) async {
+  Future<void> _downloadCV() async {
     try {
-      final url = getFullCvUrl(cvPath);
+      const url = "http://192.168.1.158:5000/api/nonemployees/download-my-cv";
 
-      if (Platform.isAndroid) {
-        var status = await Permission.storage.request();
-        if (!status.isGranted) {
-          Get.snackbar("Error", "Storage permission denied");
-          return;
-        }
-      }
-
+      // 🚀 طلب الملف من السيرفر
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
-        String fileName = url.split('/').last;
-        Directory? dir;
+        String fileName = url.split('/').last; // download-my-cv
+        Directory dir = await getApplicationDocumentsDirectory();
 
-        if (Platform.isAndroid) {
-          dir = Directory("/storage/emulated/0/Download");
-        } else if (Platform.isIOS) {
-          dir = await getApplicationDocumentsDirectory();
-        }
-
-        if (dir == null) {
-          Get.snackbar("Error", "Could not find directory");
-          return;
-        }
-
-        final file = File("${dir.path}/$fileName");
+        final file = File("${dir.path}/$fileName.pdf");
         await file.writeAsBytes(response.bodyBytes);
 
         Get.snackbar(
@@ -117,7 +97,10 @@ class _NonEmployeeProfileScreenState extends State<NonEmployeeProfileScreen> {
           duration: const Duration(seconds: 4),
         );
       } else {
-        Get.snackbar("Error", "Failed to download CV");
+        Get.snackbar(
+          "Error",
+          "Failed to download CV (status: ${response.statusCode})",
+        );
       }
     } catch (e) {
       Get.snackbar("Error", "Download error: $e");
@@ -278,7 +261,7 @@ class _NonEmployeeProfileScreenState extends State<NonEmployeeProfileScreen> {
                             child: const Text("Open"),
                           ),
                           TextButton(
-                            onPressed: () => _downloadCV(p.cvUrl),
+                            onPressed: () => _downloadCV(),
                             child: const Text("Download"),
                           ),
                         ],
@@ -312,7 +295,6 @@ class _NonEmployeeProfileScreenState extends State<NonEmployeeProfileScreen> {
 
               const SizedBox(height: 30),
 
-              /// 🔹 Save Button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
