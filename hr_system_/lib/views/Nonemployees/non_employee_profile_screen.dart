@@ -2,12 +2,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:hr_system_/controllers/login_controller.dart';
 import 'package:hr_system_/views/Nonemployees/non_employee_home_page.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:hr_system_/app_config.dart';
-
 import '../../controllers/nonemployee_profile_controller.dart'
     show ProfileController;
 
@@ -34,7 +34,8 @@ class _NonEmployeeProfileScreenState extends State<NonEmployeeProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _c.fetchProfile().then((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _c.fetchProfile();
       final p = _c.profile.value;
       if (p != null) {
         fullNameE.text = p.fullNameE;
@@ -58,52 +59,45 @@ class _NonEmployeeProfileScreenState extends State<NonEmployeeProfileScreen> {
     );
   }
 
-  /// ✅ تجهيز رابط كامل للـ CV
-  String getFullCvUrl(String? cvPath) {
-    if (cvPath == null || cvPath.isEmpty) return "";
-    if (cvPath.startsWith("http")) return cvPath;
-    return "${AppConfig.baseUrl}$cvPath";
-  }
-
-  /// ✅ فتح CV
-  Future<void> _openCV(String cvPath) async {
-    final url = getFullCvUrl(cvPath);
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      Get.snackbar("Error", "Could not open CV");
-    }
-  }
-
-  Future<void> _downloadCV() async {
+  /// 🟦 Open + Download CV
+  Future<void> _openAndDownloadCV() async {
     try {
-      const url = "http://192.168.1.158:5000/api/nonemployees/download-my-cv";
+      final loginController = LoginController();
+      final token = await loginController.getToken();
+      if (token == null) {
+        Get.snackbar("Error", "No token found, please login again");
+        return;
+      }
 
-      // 🚀 طلب الملف من السيرفر
-      final response = await http.get(Uri.parse(url));
+      final url = "${AppConfig.baseUrl}/nonemployees/download-my-cv";
+      print("🌍 [OPEN+DOWNLOAD] URL: $url");
+
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {"Authorization": "Bearer $token"},
+      );
 
       if (response.statusCode == 200) {
-        String fileName = url.split('/').last; // download-my-cv
-        Directory dir = await getApplicationDocumentsDirectory();
+        // حفظ نسخة دائمة
+        final docsDir = await getApplicationDocumentsDirectory();
+        String fileName = "cv.pdf";
+        final cd = response.headers['content-disposition'];
+        if (cd != null && cd.contains("filename=")) {
+          fileName = cd.split("filename=").last.replaceAll('"', '');
+        }
+        final savedFile = File("${docsDir.path}/$fileName");
+        await savedFile.writeAsBytes(response.bodyBytes);
 
-        final file = File("${dir.path}/$fileName.pdf");
-        await file.writeAsBytes(response.bodyBytes);
+        // ✅ فتح باستخدام open_filex (مش url_launcher)
+        final result = await OpenFilex.open(savedFile.path);
+        print("📂 Open result: ${result.message}");
 
-        Get.snackbar(
-          "Success",
-          "CV downloaded to: ${file.path}",
-          snackPosition: SnackPosition.BOTTOM,
-          duration: const Duration(seconds: 4),
-        );
+        Get.snackbar("Success", "CV saved to: ${savedFile.path}");
       } else {
-        Get.snackbar(
-          "Error",
-          "Failed to download CV (status: ${response.statusCode})",
-        );
+        Get.snackbar("Error", "Failed (status ${response.statusCode})");
       }
     } catch (e) {
-      Get.snackbar("Error", "Download error: $e");
+      Get.snackbar("Error", "Open+Download error: $e");
     }
   }
 
@@ -244,28 +238,27 @@ class _NonEmployeeProfileScreenState extends State<NonEmployeeProfileScreen> {
                       ),
                     ),
                     const SizedBox(height: 10),
-
-                    if ((p?.cvUrl ?? "").isNotEmpty)
-                      Row(
-                        children: [
-                          const Icon(Icons.description, color: Colors.blue),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              "Current CV: ${p!.cvUrl.split('/').last}",
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                    Row(
+                      children: [
+                        const Icon(Icons.description, color: Colors.blue),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            (p?.cvUrl ?? "").isEmpty
+                                ? "No file"
+                                : p!.cvUrl.split('/').last,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          TextButton(
-                            onPressed: () => _openCV(p.cvUrl),
-                            child: const Text("Open"),
-                          ),
-                          TextButton(
-                            onPressed: () => _downloadCV(),
-                            child: const Text("Download"),
-                          ),
-                        ],
-                      ),
+                        ),
+                        TextButton(
+                          onPressed:
+                              (p?.cvUrl ?? "").isEmpty
+                                  ? null
+                                  : () => _openAndDownloadCV(),
+                          child: const Text("Open CV"),
+                        ),
+                      ],
+                    ),
 
                     const SizedBox(height: 10),
 

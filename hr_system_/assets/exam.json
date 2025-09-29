@@ -1,0 +1,35 @@
+{
+  "exam": {
+    "section": "MCQ",
+    "instructions": "Choose one correct answer.",
+    "time_limit_minutes": 20
+  },
+  "mcqs": [
+    {
+      "mcq": "Which package is used for state management in Flutter?",
+      "options": {
+        "a": "Flutter Package",
+        "b": "Redux",
+        "c": "Bloc",
+        "d": "Provider"
+      },
+      "correct": "c",
+      "skill": "Bloc",
+      "difficulty": "medium",
+      "rationale": "Bloc is widely used for predictable state management in Flutter."
+    },
+    {
+      "mcq": "What is the primary language used in Flutter development?",
+      "options": {
+        "a": "Java",
+        "b": "Kotlin",
+        "c": "Dart",
+        "d": "Swift"
+      },
+      "correct": "c",
+      "skill": "Dart",
+      "difficulty": "easy",
+      "rationale": "Flutter is built on Dart, a language optimized for UI development."
+    }
+  ]
+}

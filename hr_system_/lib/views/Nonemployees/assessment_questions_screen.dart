@@ -1,4 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:hr_system_/models/mcq_model.dart';
 import 'assessment_result_screen.dart';
 
 class AssessmentQuestionsScreen extends StatefulWidget {
@@ -10,37 +13,27 @@ class AssessmentQuestionsScreen extends StatefulWidget {
 }
 
 class _AssessmentQuestionsScreenState extends State<AssessmentQuestionsScreen> {
-  final List<Map<String, dynamic>> questions = [
-    {
-      "id": 1,
-      "text": "Who is making the Web standards?",
-      "options": [
-        "Microsoft",
-        "Mozilla",
-        "Google",
-        "The World Wide Web Consortium",
-      ],
-      "correct": "The World Wide Web Consortium",
-    },
-    {
-      "id": 2,
-      "text": "Who is making the Web standards?",
-      "options": [
-        "Microsoft",
-        "Mozilla",
-        "Google",
-        "The World Wide Web Consortium",
-      ],
-      "correct": "The World Wide Web Consortium",
-    },
-  ];
-
+  List<Mcq> questions = [];
   int currentIndex = 0;
   int score = 0;
   String? selectedAnswer;
 
+  @override
+  void initState() {
+    super.initState();
+    loadQuestions();
+  }
+
+  Future<void> loadQuestions() async {
+    final String response = await rootBundle.loadString('assets/exam.json');
+    final data = jsonDecode(response);
+    setState(() {
+      questions = (data['mcqs'] as List).map((q) => Mcq.fromJson(q)).toList();
+    });
+  }
+
   void submitAnswer() {
-    if (selectedAnswer == questions[currentIndex]["correct"]) {
+    if (selectedAnswer == questions[currentIndex].correct) {
       score += 10;
     }
 
@@ -67,60 +60,37 @@ class _AssessmentQuestionsScreenState extends State<AssessmentQuestionsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (questions.isEmpty) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
     final question = questions[currentIndex];
 
     return Scaffold(
       backgroundColor: const Color(0xFFF2F4F7),
       appBar: AppBar(
         backgroundColor: Colors.blue[800],
-
+        title: const Text("Online Assessments"),
         centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-          onPressed: () => Navigator.pop(context), // ✅ زر رجوع
-        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "Question ${currentIndex + 1}/${questions.length}",
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                Text(
-                  "${(((currentIndex + 1) / questions.length) * 100).round()}%",
-                  style: const TextStyle(fontSize: 14, color: Colors.black54),
-                ),
-              ],
+            Text(
+              "Question ${currentIndex + 1}/${questions.length}",
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 10),
-            LinearProgressIndicator(
-              value: (currentIndex + 1) / questions.length,
-              backgroundColor: Colors.grey[300],
-              color: Colors.blue[800],
-              minHeight: 10,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            const SizedBox(height: 30),
-
+            const SizedBox(height: 20),
             Card(
-              color: const Color.fromARGB(255, 255, 255, 255),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(12),
               ),
               elevation: 3,
               child: Padding(
-                padding: const EdgeInsets.all(20.0),
+                padding: const EdgeInsets.all(16.0),
                 child: Text(
-                  question["text"],
+                  question.question,
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -129,64 +99,29 @@ class _AssessmentQuestionsScreenState extends State<AssessmentQuestionsScreen> {
               ),
             ),
             const SizedBox(height: 20),
-
-            // ✅ الاختيارات
-            ...question["options"].map<Widget>((option) {
-              final isSelected = option == selectedAnswer;
-              return GestureDetector(
-                onTap: () {
-                  setState(() => selectedAnswer = option);
-                },
-                child: Card(
-                  color: isSelected ? Colors.blue[50] : Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: isSelected ? 4 : 1,
-                  child: ListTile(
-                    leading: Icon(
-                      isSelected
-                          ? Icons.radio_button_checked
-                          : Icons.radio_button_off,
-                      color: isSelected ? Colors.blue[800] : Colors.grey,
-                    ),
-                    title: Text(
-                      option,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight:
-                            isSelected ? FontWeight.bold : FontWeight.normal,
-                        color: isSelected ? Colors.blue[800] : Colors.black87,
-                      ),
-                    ),
-                  ),
+            ...question.options.entries.map((opt) {
+              return Card(
+                child: RadioListTile<String>(
+                  title: Text("${opt.key}. ${opt.value}"),
+                  value: opt.key,
+                  groupValue: selectedAnswer,
+                  onChanged: (val) {
+                    setState(() => selectedAnswer = val);
+                  },
                 ),
               );
-            }).toList(),
-
+            }),
             const Spacer(),
-
-            // ✅ زر submit
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue[800],
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 16,
-                    horizontal: 40,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  elevation: 5,
-                ),
-                onPressed: selectedAnswer == null ? null : submitAnswer,
-                child: const Text(
-                  "Submit",
-                  style: TextStyle(fontSize: 18, color: Colors.white),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue[800],
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
+              onPressed: selectedAnswer == null ? null : submitAnswer,
+              child: const Text("Submit"),
             ),
           ],
         ),

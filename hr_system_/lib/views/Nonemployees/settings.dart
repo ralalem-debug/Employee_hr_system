@@ -39,7 +39,14 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ProfileController profileController = Get.put(ProfileController());
-    profileController.fetchProfile();
+
+    // ✅ استدعي fetchProfile مرة وحدة فقط بعد أول build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (profileController.profile.value == null) {
+        profileController.fetchProfile();
+      }
+    });
+
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 8, 112, 197),
       body: Obx(() {
@@ -50,7 +57,6 @@ class SettingsScreen extends StatelessWidget {
             // 🔹 الهيدر الأزرق
             Stack(
               children: [
-                // خلفية الهيدر
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(
@@ -99,7 +105,7 @@ class SettingsScreen extends StatelessWidget {
                       onTap: () {
                         Get.to(
                           () => ChangePasswordScreen(
-                            token: "", //for token
+                            token: "", // مرر التوكن الحقيقي من LoginController
                             isFirstLogin: false,
                           ),
                         );
@@ -137,9 +143,9 @@ class SettingsScreen extends StatelessWidget {
 
                     const Divider(),
 
-                    // Logout
                     const SizedBox(height: 10),
 
+                    // Logout
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: ElevatedButton.icon(
