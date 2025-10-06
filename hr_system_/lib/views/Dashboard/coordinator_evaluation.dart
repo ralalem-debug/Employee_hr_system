@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:hr_system_/controllers/evaluation/evaluation_controller.dart';
+import 'package:hr_system_/controllers/coordinator_evalutaion.dart';
 import 'package:hr_system_/models/evaluation/evaluation_question.dart';
 
 class CoordinatorEvaluationPage extends StatelessWidget {

@@ -17,30 +17,34 @@ class JobCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final JobsController _c = Get.find(); // ✅ استخدام JobsController
+    final JobsController _c = Get.find();
 
     return Container(
+      margin: const EdgeInsets.symmetric(vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xffcfe6ff),
-        borderRadius: BorderRadius.circular(14),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.09),
-            blurRadius: 18,
-            offset: const Offset(0, 10),
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // العنوان + تفاصيل
+          // 🔹 Header
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.work_outline, size: 28, color: Colors.white),
-              const SizedBox(width: 10),
+              CircleAvatar(
+                backgroundColor: Colors.blue.shade100,
+                child: const Icon(Icons.work_outline, color: Colors.blue),
+              ),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -49,14 +53,27 @@ class JobCard extends StatelessWidget {
                       job.jobTitle,
                       style: const TextStyle(
                         fontSize: 16,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
                       ),
                     ),
-                    Text(
-                      job.jobLevel,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.black54,
+                    const SizedBox(height: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        job.jobLevel,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Colors.blue,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ],
@@ -66,60 +83,82 @@ class JobCard extends StatelessWidget {
                 onPressed: () async {
                   final jobDetails = await _c.fetchJobDetails(job.jobId);
                   if (jobDetails != null) {
+                    _c.setSelectedJob(job.jobId);
                     _showJobDetails(context, jobDetails, onApply, isApplied);
                   }
                 },
-                child: const Text("Show Details"),
+                child: const Text("Details →"),
               ),
             ],
           ),
-          const SizedBox(height: 10),
 
+          const SizedBox(height: 10),
           Text(
             job.jobDescriptionSummary.isEmpty
                 ? "No summary provided."
                 : job.jobDescriptionSummary,
-            style: const TextStyle(fontSize: 13, height: 1.35),
+            style: const TextStyle(
+              fontSize: 13,
+              height: 1.4,
+              color: Colors.black87,
+            ),
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 10),
 
-          Row(
-            children: [
-              const Icon(Icons.place_outlined, size: 16),
-              const SizedBox(width: 6),
-              Expanded(child: Text(job.location)),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Row(
-            children: [
-              const Icon(Icons.badge_outlined, size: 16),
-              const SizedBox(width: 6),
-              Expanded(child: Text("Employment Type: ${job.employmentType}")),
-            ],
-          ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
 
-          Row(
-            children: [
-              const SizedBox(width: 10),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: isApplied ? null : onApply,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: isApplied ? Colors.grey : Colors.blue[700],
+          // 🔹 زر Apply / Applied فقط
+          Align(
+            alignment: Alignment.centerRight,
+            child: SizedBox(
+              width: 120,
+              child: ElevatedButton(
+                onPressed: isApplied ? null : onApply,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isApplied ? Colors.grey : Colors.blue[700],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Text(isApplied ? "Applied" : "Apply"),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
                 ),
+                child:
+                    isApplied
+                        ? Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Icon(
+                              Icons.check_circle,
+                              size: 18,
+                              color: Colors.white,
+                            ),
+                            SizedBox(width: 6),
+                            Text(
+                              "Applied",
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        )
+                        : const Text(
+                          "Apply Now",
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
               ),
-            ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  /// 📌 BottomSheet
+  /// 📌 BottomSheet تفاصيل الوظيفة
   void _showJobDetails(
     BuildContext ctx,
     JobModel job,

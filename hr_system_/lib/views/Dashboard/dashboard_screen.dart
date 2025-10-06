@@ -21,6 +21,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../employee_nav_bar.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -50,7 +51,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   void initState() {
-    super.initState();
+    super.initState(); // 🔹 تهيئة الـ locale
+    initializeDateFormatting('en', null).then((_) {
+      // إذا بدك عربي كمان ضيف سطر إضافي:
+      // await initializeDateFormatting('ar', null);
+    });
     _loadCalendarEvents();
     _fetchPerformance();
     _checkCoordinatorRole();

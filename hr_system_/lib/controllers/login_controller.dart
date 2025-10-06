@@ -24,7 +24,6 @@ class LoginResult {
 class LoginController {
   final emailOrUserController = TextEditingController();
   final passwordController = TextEditingController();
-
   final _secureStorage = const FlutterSecureStorage();
 
   void dispose() {
@@ -32,7 +31,7 @@ class LoginController {
     passwordController.dispose();
   }
 
-  // helper
+  /// 🔑 helper function to pick a claim
   String? _claim(Map<String, dynamic> m, List<String> keys) {
     for (final k in keys) {
       final v = m[k];
@@ -43,6 +42,7 @@ class LoginController {
     return null;
   }
 
+  /// 🔹 Login API
   Future<LoginResult> login() async {
     final input = emailOrUserController.text.trim();
     final password = passwordController.text.trim();
@@ -70,7 +70,7 @@ class LoginController {
           return LoginResult(success: false, message: "No token returned");
         }
 
-        // فك التوكن
+        /// 🟢 Decode JWT
         List<String> roles = [];
         String? userId;
         String? employeeId;
@@ -104,23 +104,25 @@ class LoginController {
             'preferred_username',
             'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name',
           ]);
-        } catch (_) {}
+        } catch (e) {
+          print("❌ Failed to decode JWT: $e");
+        }
 
-        // خزّن
+        /// 💾 Save to secure storage
         await _secureStorage.write(key: "auth_token", value: token);
         await _secureStorage.write(key: "roles", value: jsonEncode(roles));
-        if (userId != null) {
+        if (userId != null)
           await _secureStorage.write(key: "user_id", value: userId);
-        }
-        if (employeeId != null) {
+        if (employeeId != null)
           await _secureStorage.write(key: "employee_id", value: employeeId);
-        }
-        if (displayName != null) {
+        if (displayName != null)
           await _secureStorage.write(key: "display_name", value: displayName);
-        }
 
-        print("🟦 All claims from token:");
-        roles.forEach((r) => print("   - $r"));
+        print("🟦 Claims from token:");
+        print("   userId: $userId");
+        print("   employeeId: $employeeId");
+        print("   displayName: $displayName");
+        roles.forEach((r) => print("   role: $r"));
 
         return LoginResult(
           success: true,
@@ -145,7 +147,11 @@ class LoginController {
     }
   }
 
+  /// 🔹 Helpers (Getters)
   Future<String?> getToken() => _secureStorage.read(key: "auth_token");
+  Future<String?> getApplicantId() => _secureStorage.read(key: "user_id");
+  Future<String?> getEmployeeId() => _secureStorage.read(key: "employee_id");
+  Future<String?> getDisplayName() => _secureStorage.read(key: "display_name");
 
   Future<List<String>> getRoles() async {
     final roleStr = await _secureStorage.read(key: "roles");
@@ -161,11 +167,12 @@ class LoginController {
     return [];
   }
 
+  Future<String?> getApplicantIdFromStorage() async {
+    return await _secureStorage.read(key: "applicant_id");
+  }
+
+  /// 🔹 Logout
   Future<void> logout() async {
-    await _secureStorage.delete(key: "auth_token");
-    await _secureStorage.delete(key: "roles");
-    await _secureStorage.delete(key: "user_id");
-    await _secureStorage.delete(key: "employee_id");
-    await _secureStorage.delete(key: "display_name");
+    await _secureStorage.deleteAll();
   }
 }
