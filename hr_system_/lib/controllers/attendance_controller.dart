@@ -7,18 +7,20 @@ class AttendanceController {
   final storage = const FlutterSecureStorage();
   static const _timeout = Duration(seconds: 15);
 
+  // 🔹 اقرأ التوكن من التخزين الآمن
   Future<String?> _getToken() => storage.read(key: 'auth_token');
 
+  // 🔹 هيدر الطلبات
   Map<String, String> _headers(String? token) => {
     'Accept': 'application/json',
     if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
   };
 
-  /// ✅ دالة بسيطة ترجع إذا الموظف موجود أو لا
+  // ✅ تحقق من وجود المستخدم داخل المكتب
   Future<bool> isAtOffice(String userId) async {
     try {
       final res = await http
-          .get(Uri.parse("http://192.168.1.170:8001/at-office/$userId"))
+          .get(Uri.parse("http://192.168.1.103:8000/at-office/$userId"))
           .timeout(_timeout);
 
       if (res.statusCode == 200) {
@@ -34,13 +36,14 @@ class AttendanceController {
     }
   }
 
+  // ✅ الحصول على وقت CheckIn و CheckOut
   Future<AttendanceModel?> getCheckInOutTime() async {
     final token = await _getToken();
     try {
       final res = await http
           .get(
             Uri.parse(
-              "http://192.168.1.158:5000/api/attendance/checkInOut-time",
+              "http://46.185.162.66:30211/api/attendance/checkInOut-time",
             ),
             headers: _headers(token),
           )
@@ -49,6 +52,8 @@ class AttendanceController {
       if (res.statusCode == 200) {
         final json = jsonDecode(res.body);
         return AttendanceModel.fromJson(json);
+      } else {
+        print("❌ Error ${res.statusCode}: ${res.body}");
       }
       return null;
     } catch (e) {
@@ -57,34 +62,48 @@ class AttendanceController {
     }
   }
 
+  // ✅ تنفيذ Check-in
   Future<bool> doCheckIn() async {
     final token = await _getToken();
     try {
       final res = await http
           .post(
-            Uri.parse("http://192.168.1.158:5000/api/attendance/checkin"),
+            Uri.parse("http://46.185.162.66:30211/api/attendance/checkin"),
             headers: _headers(token),
           )
           .timeout(_timeout);
 
-      return res.statusCode == 200;
+      if (res.statusCode == 200) {
+        print("✅ Check-in successful");
+        return true;
+      } else {
+        print("❌ Failed Check-in: ${res.statusCode} ${res.body}");
+        return false;
+      }
     } catch (e) {
       print("❌ Error doCheckIn: $e");
       return false;
     }
   }
 
+  // ✅ تنفيذ Check-out
   Future<bool> doCheckOut() async {
     final token = await _getToken();
     try {
       final res = await http
           .post(
-            Uri.parse("http://192.168.1.158:5000/api/attendance/checkout"),
+            Uri.parse("http://46.185.162.66:30211/api/attendance/checkout"),
             headers: _headers(token),
           )
           .timeout(_timeout);
 
-      return res.statusCode == 200;
+      if (res.statusCode == 200) {
+        print("✅ Check-out successful");
+        return true;
+      } else {
+        print("❌ Failed Check-out: ${res.statusCode} ${res.body}");
+        return false;
+      }
     } catch (e) {
       print("❌ Error doCheckOut: $e");
       return false;

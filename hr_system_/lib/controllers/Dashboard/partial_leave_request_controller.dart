@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:hr_system_/models/Dashboard/partial_leave_request.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import '../../app_config.dart'; // ← تأكد من المسار حسب مشروعك
+import '../../app_config.dart';
 
 class LeaveRequestController {
   final TextEditingController startTimeController = TextEditingController();
@@ -16,7 +16,6 @@ class LeaveRequestController {
   TimeOfDay? toTime;
   DateTime? selectedDate;
 
-  // ✅ Secure storage
   final storage = const FlutterSecureStorage();
 
   static const _timeout = Duration(seconds: 15);
@@ -29,9 +28,8 @@ class LeaveRequestController {
     dateController.text = _formatDate(now);
   }
 
-  // يبني URI آمنًا اعتمادًا على AppConfig.baseUrl + path
   Uri _u(String path) {
-    final b = Uri.parse(AppConfig.baseUrl); // مثلا: http://192.168.1./api
+    final b = Uri.parse(AppConfig.baseUrl);
     final basePath =
         b.path.endsWith('/')
             ? b.path.substring(0, b.path.length - 1)

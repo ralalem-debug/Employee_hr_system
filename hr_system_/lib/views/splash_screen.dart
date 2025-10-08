@@ -40,9 +40,7 @@ class _SplashScreenState extends State<SplashScreen>
     if (AppConfig.baseUrl.isEmpty) {
       Get.offAll(
         () => const LoginScreen(),
-        arguments: {
-          "error": "لم يتم العثور على السيرفر. يرجى المحاولة لاحقًا.",
-        },
+        arguments: {"error": "Server not found. Please try again later."},
       );
     } else {
       _goLogin();

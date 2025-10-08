@@ -9,9 +9,9 @@ import 'package:hr_system_/controllers/login_controller.dart';
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
-  Widget _buildSectionTitle(String title) {
+  Widget _buildSectionTitle(String title, double width) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
+      padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: width * 0.04),
       child: Text(
         title,
         style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
@@ -24,156 +24,193 @@ class SettingsScreen extends StatelessWidget {
     required IconData icon,
     required VoidCallback onTap,
     bool showSwitch = false,
+    double width = 0,
   }) {
     return ListTile(
-      leading: Icon(icon, color: Colors.blue),
-      title: Text(title),
+      leading: Icon(icon, color: Colors.blue, size: width * 0.06),
+      title: Text(title, style: TextStyle(fontSize: width * 0.04)),
       trailing:
           showSwitch
               ? Switch(value: false, onChanged: (_) {})
-              : const Icon(Icons.arrow_forward_ios, size: 16),
+              : Icon(Icons.arrow_forward_ios, size: width * 0.04),
       onTap: onTap,
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final ProfileController profileController = Get.put(ProfileController());
+    final size = MediaQuery.of(context).size;
+    final profileController = Get.put(ProfileController());
 
-    // ✅ استدعي fetchProfile مرة وحدة فقط بعد أول build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (profileController.profile.value == null) {
         profileController.fetchProfile();
       }
     });
 
-    return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 8, 112, 197),
-      body: Obx(() {
-        final profile = profileController.profile.value;
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: const Color.fromARGB(255, 8, 112, 197),
+        body: Obx(() {
+          final profile = profileController.profile.value;
 
-        return Column(
-          children: [
-            // 🔹 الهيدر الأزرق
-            Stack(
-              children: [
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 60,
-                    horizontal: 20,
+          return Column(
+            children: [
+              Stack(
+                children: [
+                  Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.symmetric(
+                      vertical: size.height * 0.06,
+                      horizontal: size.width * 0.05,
+                    ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
 
-            // Body
-            Expanded(
-              child: Container(
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-                ),
-                child: ListView(
-                  children: [
-                    ListTile(
-                      title: Text(
-                        profile?.fullNameE ?? "Loading...",
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: Text(profile?.email ?? "Loading..."),
-                      leading: const CircleAvatar(
-                        backgroundColor: Color.fromARGB(255, 7, 99, 173),
-                        child: Icon(Icons.person, color: Colors.white),
-                      ),
+              Expanded(
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(24),
                     ),
-
-                    const Divider(),
-
-                    // Account Settings
-                    _buildSectionTitle("Account Settings"),
-                    _buildListTile(
-                      title: "My information",
-                      icon: Icons.info_outline,
-                      onTap: () {
-                        Get.to(() => const NonEmployeeProfileScreen());
-                      },
-                    ),
-                    _buildListTile(
-                      title: "Change password",
-                      icon: Icons.lock_outline,
-                      onTap: () {
-                        Get.to(
-                          () => ChangePasswordScreen(
-                            token: "", // مرر التوكن الحقيقي من LoginController
-                            isFirstLogin: false,
+                  ),
+                  child: ListView(
+                    children: [
+                      ListTile(
+                        title: Text(
+                          profile?.fullNameE ?? "Loading...",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: size.width * 0.045,
                           ),
-                        );
-                      },
-                    ),
-
-                    const Divider(),
-
-                    // More
-                    _buildSectionTitle("More"),
-                    _buildListTile(
-                      title: "About us",
-                      icon: Icons.info,
-                      onTap: () {
-                        Get.toNamed('/aboutus');
-                      },
-                    ),
-                    _buildListTile(
-                      title: "Privacy policy",
-                      icon: Icons.privacy_tip_outlined,
-                      onTap: () {
-                        Get.toNamed('/privacypolicy');
-                      },
-                    ),
-                    _buildListTile(
-                      title: "Terms and conditions",
-                      icon: Icons.description_outlined,
-                      onTap: () {},
-                    ),
-                    _buildListTile(
-                      title: "Need Help ?",
-                      icon: Icons.help_outline,
-                      onTap: () {},
-                    ),
-
-                    const Divider(),
-
-                    const SizedBox(height: 10),
-
-                    // Logout
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          final loginController = Get.put(LoginController());
-                          loginController.logout();
-                          Get.offAllNamed("/login");
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red.shade100,
-                          foregroundColor: Colors.red,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        subtitle: Text(
+                          profile?.email ?? "Loading...",
+                          style: TextStyle(fontSize: size.width * 0.035),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        leading: CircleAvatar(
+                          radius: size.width * 0.07,
+                          backgroundColor: const Color.fromARGB(
+                            255,
+                            7,
+                            99,
+                            173,
+                          ),
+                          child: Icon(
+                            Icons.person,
+                            color: Colors.white,
+                            size: size.width * 0.07,
                           ),
                         ),
-                        icon: const Icon(Icons.logout),
-                        label: const Text("Logout"),
                       ),
-                    ),
-                  ],
+
+                      const Divider(),
+
+                      // Account Settings
+                      _buildSectionTitle("Account Settings", size.width),
+                      _buildListTile(
+                        title: "My information",
+                        icon: Icons.info_outline,
+                        onTap: () {
+                          Get.to(() => const NonEmployeeProfileScreen());
+                        },
+                        width: size.width,
+                      ),
+                      _buildListTile(
+                        title: "Change password",
+                        icon: Icons.lock_outline,
+                        onTap: () {
+                          Get.to(
+                            () => ChangePasswordScreen(
+                              token:
+                                  "", // مرر التوكن الحقيقي من LoginController
+                              isFirstLogin: false,
+                            ),
+                          );
+                        },
+                        width: size.width,
+                      ),
+
+                      const Divider(),
+
+                      // More
+                      _buildSectionTitle("More", size.width),
+                      _buildListTile(
+                        title: "About us",
+                        icon: Icons.info,
+                        onTap: () {
+                          Get.toNamed('/aboutus');
+                        },
+                        width: size.width,
+                      ),
+                      _buildListTile(
+                        title: "Privacy policy",
+                        icon: Icons.privacy_tip_outlined,
+                        onTap: () {
+                          Get.toNamed('/privacypolicy');
+                        },
+                        width: size.width,
+                      ),
+                      _buildListTile(
+                        title: "Terms and conditions",
+                        icon: Icons.description_outlined,
+                        onTap: () {},
+                        width: size.width,
+                      ),
+                      _buildListTile(
+                        title: "Need Help ?",
+                        icon: Icons.help_outline,
+                        onTap: () {},
+                        width: size.width,
+                      ),
+
+                      const Divider(),
+
+                      SizedBox(height: size.height * 0.02),
+
+                      // Logout
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: size.width * 0.04,
+                        ),
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            final loginController = Get.put(LoginController());
+                            loginController.logout();
+                            Get.offAllNamed("/login");
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red.shade100,
+                            foregroundColor: Colors.red,
+                            padding: EdgeInsets.symmetric(
+                              vertical: size.height * 0.018,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          icon: Icon(Icons.logout, size: size.width * 0.06),
+                          label: Text(
+                            "Logout",
+                            style: TextStyle(fontSize: size.width * 0.045),
+                          ),
+                        ),
+                      ),
+
+                      SizedBox(height: size.height * 0.02),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
-        );
-      }),
-      bottomNavigationBar: const CustomNavBar(currentIndex: 3),
+            ],
+          );
+        }),
+        bottomNavigationBar: const CustomNavBar(currentIndex: 3),
+      ),
     );
   }
 }

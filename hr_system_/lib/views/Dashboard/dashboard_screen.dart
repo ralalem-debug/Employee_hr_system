@@ -18,7 +18,6 @@ import 'package:hr_system_/views/Dashboard/salary_advance_list_screen.dart';
 import 'package:http/http.dart' as http;
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../employee_nav_bar.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -438,8 +437,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   label: 'Leave Request',
                   icon: Icons.note_add,
                   onTap: () async {
-                    final prefs = await SharedPreferences.getInstance();
-                    final token = prefs.getString('auth_token');
+                    final secureStorage = const FlutterSecureStorage();
+                    final token = await secureStorage.read(key: 'auth_token');
                     if (token == null) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Please login again!')),
@@ -456,6 +455,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     );
                   },
                 ),
+
                 const SizedBox(height: 12),
                 _leaveOptionButton(
                   label: 'Request Leave List',

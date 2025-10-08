@@ -5,7 +5,7 @@ import 'hrms_discovery.dart';
 class AppConfig {
   static String baseUrl = const String.fromEnvironment(
     'BASE_URL',
-    defaultValue: 'http://192.168.1.234:30211/api',
+    defaultValue: 'http://46.185.162.66:30211/api',
   );
 
   static const _storage = FlutterSecureStorage();
@@ -57,7 +57,7 @@ class AppConfig {
     }
 
     for (final candidate in <String>[
-      'http://192.168.1.234:30211/api',
+      'http://46.185.162.66:30211/api',
       'http://10.0.2.2:5000/api',
     ]) {
       if (await _canReach(candidate)) {

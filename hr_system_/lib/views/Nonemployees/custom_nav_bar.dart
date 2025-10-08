@@ -11,18 +11,15 @@ class CustomNavBar extends StatelessWidget {
   final int currentIndex;
   const CustomNavBar({super.key, this.currentIndex = 0});
 
-  // ✅ قراءة nonEmployeeId من التخزين أو من التوكن
   Future<String?> _getNonEmployeeId() async {
     const storage = FlutterSecureStorage();
 
-    // أولاً نحاول نقرأ الـ user_id مباشرة من التخزين (أسرع)
     final savedId = await storage.read(key: "user_id");
     if (savedId != null && savedId.isNotEmpty) {
       print("✅ Loaded nonEmployeeId from storage: $savedId");
       return savedId;
     }
 
-    // إذا ما وُجد، نرجع نفك التوكن يدوياً
     final token = await storage.read(key: "auth_token");
     if (token == null || token.isEmpty) {
       print("⚠️ No token found in storage (key: auth_token)");
@@ -97,10 +94,7 @@ class CustomNavBar extends StatelessWidget {
           icon: Icon(Icons.notifications_outlined),
           label: "NOTIFICATION",
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person_outline),
-          label: "PROFILE",
-        ),
+        BottomNavigationBarItem(icon: Icon(Icons.settings), label: "Settings"),
       ],
     );
   }
