@@ -37,10 +37,10 @@ class _SplashScreenState extends State<SplashScreen>
   Future<void> _initApp() async {
     await Future.delayed(const Duration(seconds: 2));
 
-    if (AppConfig.baseUrl.isEmpty) {
+    if (!AppConfig.serverReachable) {
       Get.offAll(
         () => const LoginScreen(),
-        arguments: {"error": "Server not found. Please try again later."},
+        arguments: {"error": "Server not reachable. Please try again later."},
       );
     } else {
       _goLogin();
