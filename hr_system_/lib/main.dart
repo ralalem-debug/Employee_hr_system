@@ -16,8 +16,8 @@ import 'views/settings/privacypolicy.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await debugDiscovery();
-  await AppConfig.init();
+  await debugDiscovery(); // للتأكد من إعدادات التطوير
+  await AppConfig.init(); // 🔹 هذه الآن آمنة ولن تسبب crash
   runApp(const OnsetWayApp());
 }
 
@@ -29,12 +29,14 @@ class OnsetWayApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'Onset Way HR',
       debugShowCheckedModeBanner: false,
+
       builder: (context, child) {
         return MediaQuery(
           data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
           child: child!,
         );
       },
+
       theme: ThemeData(
         primarySwatch: Colors.blue,
         fontFamily: 'Arial',
@@ -49,13 +51,16 @@ class OnsetWayApp extends StatelessWidget {
           ),
         ),
       ),
+
+      /// 🔹 أول شاشة
       initialRoute: '/',
+
+      /// 🔹 تعريف الصفحات
       getPages: [
         GetPage(
           name: '/coordinator-evaluation',
           page: () => const CoordinatorEvaluationPage(),
         ),
-
         GetPage(name: '/', page: () => const SplashScreen()),
         GetPage(name: '/login', page: () => const LoginScreen()),
         GetPage(name: '/home', page: () => const HomeScreen()),

@@ -72,6 +72,14 @@ class _LoginScreenState extends State<LoginScreen>
           backgroundColor: Colors.orange.shade100,
         );
       }
+    } else {
+      Get.snackbar(
+        "Login Failed",
+        result.message,
+        backgroundColor: Colors.redAccent.withOpacity(0.2),
+        colorText: Colors.black87,
+        snackPosition: SnackPosition.BOTTOM,
+      );
     }
   }
 
