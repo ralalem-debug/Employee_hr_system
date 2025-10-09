@@ -11,6 +11,7 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter/material.dart';
 
 class SelfieController extends GetxController {
   var isLoading = false.obs;
@@ -18,7 +19,60 @@ class SelfieController extends GetxController {
 
   final storage = const FlutterSecureStorage();
 
-  // ————— Helpers —————
+  // ===== UI notifiers (Snackbars) =====
+  void _notifyError(String message) {
+    final msg =
+        message.trim().isNotEmpty
+            ? message
+            : 'An unexpected error occurred. Please try again.';
+    if (kDebugMode) print('❌ Snackbar Error: $msg');
+    if (Get.isSnackbarOpen) Get.closeAllSnackbars();
+    Get.snackbar(
+      'Error',
+      msg,
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: const Color(0xFFEF5350),
+      colorText: Colors.white,
+      icon: const Icon(Icons.error_outline, color: Colors.white),
+      duration: const Duration(seconds: 4),
+      margin: const EdgeInsets.all(12),
+      borderRadius: 12,
+    );
+  }
+
+  void _notifySuccess(String message) {
+    if (kDebugMode) print('✅ Snackbar Success: $message');
+    if (Get.isSnackbarOpen) Get.closeAllSnackbars();
+    Get.snackbar(
+      'Success',
+      message,
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: const Color(0xFF43A047),
+      colorText: Colors.white,
+      icon: const Icon(Icons.check_circle_outline, color: Colors.white),
+      duration: const Duration(seconds: 3),
+      margin: const EdgeInsets.all(12),
+      borderRadius: 12,
+    );
+  }
+
+  void _notifyInfo(String message) {
+    if (kDebugMode) print('ℹ️ Snackbar Info: $message');
+    if (Get.isSnackbarOpen) Get.closeAllSnackbars();
+    Get.snackbar(
+      'Info',
+      message,
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: const Color(0xFF42A5F5),
+      colorText: Colors.white,
+      icon: const Icon(Icons.info_outline, color: Colors.white),
+      duration: const Duration(seconds: 3),
+      margin: const EdgeInsets.all(12),
+      borderRadius: 12,
+    );
+  }
+
+  // ===== Helpers / Logging =====
   void _log(String msg, {Object? err, StackTrace? st}) {
     if (kDebugMode) {
       dev.log(msg, name: 'SelfieController', error: err, stackTrace: st);
@@ -36,7 +90,6 @@ class SelfieController extends GetxController {
   String _extractServerError(String body) {
     try {
       final data = jsonDecode(body);
-
       final msg =
           data['message'] ?? data['error'] ?? data['detail'] ?? data['title'];
       if (msg is String && msg.trim().isNotEmpty) return msg;
@@ -45,10 +98,11 @@ class SelfieController extends GetxController {
         final map = data['errors'] as Map;
         final parts = <String>[];
         map.forEach((k, v) {
-          if (v is List)
+          if (v is List) {
             parts.add('$k: ${v.join(", ")}');
-          else
+          } else {
             parts.add('$k: $v');
+          }
         });
         if (parts.isNotEmpty) return parts.join(' | ');
       }
@@ -99,23 +153,23 @@ class SelfieController extends GetxController {
       } else {
         final msg = _extractServerError(res.body);
         errorMessage = "Failed to fetch userId (${res.statusCode}): $msg";
-        print('❌ $errorMessage');
+        _notifyError(errorMessage!);
         return null;
       }
     } on TimeoutException catch (e, st) {
       _log('myId timeout', err: e, st: st);
       errorMessage = "Timeout while fetching userId.";
-      print('❌ $errorMessage');
+      _notifyError(errorMessage!);
       return null;
     } on SocketException catch (e, st) {
       _log('myId network error', err: e, st: st);
       errorMessage = "Network error while fetching userId.";
-      print('❌ $errorMessage');
+      _notifyError(errorMessage!);
       return null;
     } catch (e, st) {
       _log('myId unexpected error', err: e, st: st);
-      errorMessage = "Error: $e";
-      print('❌ $errorMessage');
+      errorMessage = "Error: ${e.toString()}";
+      _notifyError(errorMessage!);
       return null;
     }
   }
@@ -151,7 +205,7 @@ class SelfieController extends GetxController {
   Future<bool> uploadSelfies(List<File> images, String token) async {
     isLoading.value = true;
     errorMessage = null;
-    print('🚀 Starting selfie upload...');
+    _notifyInfo('Uploading selfies…');
 
     try {
       String? userId = await storage.read(key: 'user_id');
@@ -159,7 +213,7 @@ class SelfieController extends GetxController {
         userId = await fetchUserId(token);
         if (userId == null) {
           isLoading.value = false;
-          print('❌ Abort: userId is null -> $errorMessage');
+          _log('Abort: userId is null -> $errorMessage');
           return false;
         }
       }
@@ -168,12 +222,12 @@ class SelfieController extends GetxController {
         "http://46.185.162.66:30211/m/v1/users/$userId/refs",
       );
       _log('POST $uri');
-      final req = http.MultipartRequest('POST', uri);
-      req.headers['accept'] = 'application/json';
-      req.headers['Authorization'] = 'Bearer $token';
+      final req =
+          http.MultipartRequest('POST', uri)
+            ..headers['accept'] = 'application/json'
+            ..headers['Authorization'] = 'Bearer $token';
 
-      for (int i = 0; i < images.length; i++) {
-        final f = images[i];
+      for (final f in images) {
         _log('Adding image ${f.path}');
         req.files.add(await _toPart(f));
       }
@@ -188,7 +242,7 @@ class SelfieController extends GetxController {
         if (res.statusCode == 200) {
           isLoading.value = false;
           await storage.write(key: 'selfie_done', value: 'true');
-          print('✅ Upload successful');
+          _notifySuccess('Selfies uploaded successfully.');
           return true;
         }
 
@@ -199,26 +253,26 @@ class SelfieController extends GetxController {
         } catch (_) {
           errorMessage = body;
         }
-        print('❌ Upload failed (${res.statusCode}): $errorMessage');
+        _notifyError(
+          'Upload failed (${res.statusCode}): ${errorMessage ?? ''}',
+        );
         return false;
       } on TimeoutException {
         errorMessage = 'Timeout while uploading selfies.';
-        _log(errorMessage!);
-        print('❌ $errorMessage');
+        _notifyError(errorMessage!);
         return false;
       } on SocketException {
         errorMessage = 'Network error while uploading selfies.';
-        _log(errorMessage!);
-        print('❌ $errorMessage');
+        _notifyError(errorMessage!);
         return false;
       } finally {
         client.close();
       }
     } catch (e, st) {
       isLoading.value = false;
-      errorMessage = 'Unexpected error: $e';
+      errorMessage = 'Unexpected error: ${e.toString()}';
       _log(errorMessage!, err: e, st: st);
-      print('❌ $errorMessage');
+      _notifyError(errorMessage!);
       return false;
     }
   }
