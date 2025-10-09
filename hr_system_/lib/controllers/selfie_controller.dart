@@ -22,6 +22,9 @@ class SelfieController extends GetxController {
   void _log(String msg, {Object? err, StackTrace? st}) {
     if (kDebugMode) {
       dev.log(msg, name: 'SelfieController', error: err, stackTrace: st);
+      print('🪵 [SelfieController] $msg');
+      if (err != null) print('❌ Error: $err');
+      if (st != null) print('📄 Stack: $st');
     }
   }
 
@@ -76,7 +79,7 @@ class SelfieController extends GetxController {
   }
 
   Future<String?> fetchUserId(String token) async {
-    final uri = Uri.parse("${AppConfig.baseUrl}/Auth/myId"); // ✅ ديناميكي
+    final uri = Uri.parse("${AppConfig.baseUrl}/Auth/myId");
     _log('GET $uri');
     try {
       final res = await http
@@ -91,23 +94,28 @@ class SelfieController extends GetxController {
       if (res.statusCode == 200) {
         final userId = res.body.replaceAll('"', '').trim();
         await storage.write(key: 'user_id', value: userId);
+        print('✅ userId fetched: $userId');
         return userId;
       } else {
         final msg = _extractServerError(res.body);
         errorMessage = "Failed to fetch userId (${res.statusCode}): $msg";
+        print('❌ $errorMessage');
         return null;
       }
     } on TimeoutException catch (e, st) {
       _log('myId timeout', err: e, st: st);
       errorMessage = "Timeout while fetching userId.";
+      print('❌ $errorMessage');
       return null;
     } on SocketException catch (e, st) {
       _log('myId network error', err: e, st: st);
       errorMessage = "Network error while fetching userId.";
+      print('❌ $errorMessage');
       return null;
     } catch (e, st) {
       _log('myId unexpected error', err: e, st: st);
       errorMessage = "Error: $e";
+      print('❌ $errorMessage');
       return null;
     }
   }
@@ -130,10 +138,7 @@ class SelfieController extends GetxController {
     }
 
     final bytes = await fileToSend.readAsBytes();
-    dev.log(
-      'Attach file: ${fileToSend.path} (bytes: ${bytes.length})',
-      name: 'SelfieController',
-    );
+    _log('Attach file: ${fileToSend.path} (bytes: ${bytes.length})');
 
     return http.MultipartFile.fromBytes(
       'files',
@@ -146,6 +151,7 @@ class SelfieController extends GetxController {
   Future<bool> uploadSelfies(List<File> images, String token) async {
     isLoading.value = true;
     errorMessage = null;
+    print('🚀 Starting selfie upload...');
 
     try {
       String? userId = await storage.read(key: 'user_id');
@@ -153,46 +159,39 @@ class SelfieController extends GetxController {
         userId = await fetchUserId(token);
         if (userId == null) {
           isLoading.value = false;
-          dev.log(
-            'Abort: userId null -> $errorMessage',
-            name: 'SelfieController',
-          );
+          print('❌ Abort: userId is null -> $errorMessage');
           return false;
         }
       }
 
-      // إنشاء URI لرفع الصور
       final uri = Uri.parse(
         "http://46.185.162.66:30211/m/v1/users/$userId/refs",
       );
+      _log('POST $uri');
       final req = http.MultipartRequest('POST', uri);
       req.headers['accept'] = 'application/json';
       req.headers['Authorization'] = 'Bearer $token';
 
-      // إضافة الصور إلى الطلب
       for (int i = 0; i < images.length; i++) {
         final f = images[i];
-        req.files.add(await _toPart(f)); // إضافة كل صورة
+        _log('Adding image ${f.path}');
+        req.files.add(await _toPart(f));
       }
 
-      // إرسال الطلب
       final client = http.Client();
       try {
         final res = await client.send(req).timeout(const Duration(minutes: 3));
         final body = await res.stream.bytesToString();
-        dev.log('Status: ${res.statusCode}', name: 'SelfieController');
-        dev.log(
-          'Response body: ${body.length > 800 ? body.substring(0, 800) + '...' : body}',
-          name: 'SelfieController',
-        );
+        _log('Status: ${res.statusCode}');
+        _log('Response body: ${_firstN(body)}');
 
         if (res.statusCode == 200) {
           isLoading.value = false;
           await storage.write(key: 'selfie_done', value: 'true');
+          print('✅ Upload successful');
           return true;
         }
 
-        // في حالة فشل رفع الصور
         try {
           final dec = jsonDecode(body);
           errorMessage =
@@ -200,14 +199,17 @@ class SelfieController extends GetxController {
         } catch (_) {
           errorMessage = body;
         }
+        print('❌ Upload failed (${res.statusCode}): $errorMessage');
         return false;
       } on TimeoutException {
         errorMessage = 'Timeout while uploading selfies.';
-        dev.log(errorMessage!, name: 'SelfieController');
+        _log(errorMessage!);
+        print('❌ $errorMessage');
         return false;
       } on SocketException {
         errorMessage = 'Network error while uploading selfies.';
-        dev.log(errorMessage!, name: 'SelfieController');
+        _log(errorMessage!);
+        print('❌ $errorMessage');
         return false;
       } finally {
         client.close();
@@ -215,12 +217,8 @@ class SelfieController extends GetxController {
     } catch (e, st) {
       isLoading.value = false;
       errorMessage = 'Unexpected error: $e';
-      dev.log(
-        errorMessage!,
-        name: 'SelfieController',
-        error: e,
-        stackTrace: st,
-      );
+      _log(errorMessage!, err: e, st: st);
+      print('❌ $errorMessage');
       return false;
     }
   }
