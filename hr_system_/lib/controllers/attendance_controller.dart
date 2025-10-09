@@ -16,7 +16,6 @@ class AttendanceController {
     if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
   };
 
-  // ✅ تحقق من وجود المستخدم داخل المكتب
   Future<bool> isAtOffice(String userId) async {
     try {
       final res = await http

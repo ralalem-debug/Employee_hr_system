@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hr_system_/models/attendance_model.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import '../controllers/attendance_controller.dart';
@@ -37,9 +38,27 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadData() async {
     setState(() => isLoading = true);
 
-    const userId = "ee63573a-14fd-4774-884d-15ee1f963d38"; // TODO: dynamic
-    final att = await controller.getCheckInOutTime();
+    // 📦 اقرأ الـ userId من التخزين الآمن
+    final storage = const FlutterSecureStorage();
+    final userId = await storage.read(key: 'user_id');
+
+    if (userId == null) {
+      print("⚠️ No user_id found in secure storage!");
+      _showMsg("⚠️ لم يتم العثور على معرف المستخدم. يرجى تسجيل الدخول مجددًا.");
+      setState(() => isLoading = false);
+      return;
+    }
+
+    print("👤 Current userId: $userId");
+
+    // ✅ تحقق من وجود المستخدم داخل المكتب أولًا
     final present = await controller.isAtOffice(userId);
+
+    // ✅ إذا كان داخل المكتب، اجلب بيانات الحضور
+    AttendanceModel? att;
+    if (present) {
+      att = await controller.getCheckInOutTime();
+    }
 
     if (mounted) {
       setState(() {
@@ -122,12 +141,15 @@ class _HomeScreenState extends State<HomeScreen> {
                             canCheckIn
                                 ? () async {
                                   final ok = await controller.doCheckIn();
-                                  _showMsg(
-                                    ok
-                                        ? "✅ Check-in recorded"
-                                        : "❌ Failed check-in",
-                                  );
-                                  _loadData();
+                                  if (ok) {
+                                    _showMsg("✅ Check-in recorded");
+                                    await Future.delayed(
+                                      const Duration(seconds: 1),
+                                    );
+                                    await _loadData(); // يعيد تحميل البيانات بعد أن يُسجل فعلاً
+                                  } else {
+                                    _showMsg("❌ Failed check-in");
+                                  }
                                 }
                                 : null,
                         label: Text(
