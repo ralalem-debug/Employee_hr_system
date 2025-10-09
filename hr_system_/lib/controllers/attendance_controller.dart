@@ -20,7 +20,7 @@ class AttendanceController {
   Future<bool> isAtOffice(String userId) async {
     try {
       final res = await http
-          .get(Uri.parse("http://192.168.1.103:8000/at-office/$userId"))
+          .get(Uri.parse("http://46.185.162.66:30211/at-office/$userId"))
           .timeout(_timeout);
 
       if (res.statusCode == 200) {
