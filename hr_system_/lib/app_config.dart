@@ -28,9 +28,7 @@ class AppConfig {
 
   static Future<bool> _checkServerConnection() async {
     try {
-      final uri = Uri.parse(
-        "$baseUrl/Auth/login",
-      ); // بدّل من /HealthCheck إلى /Auth/login
+      final uri = Uri.parse("$baseUrl/Auth/login");
       final response = await http.get(uri).timeout(const Duration(seconds: 5));
       return response.statusCode == 200 ||
           response.statusCode == 401; // 401 مقبولة لأنها تطلب تسجيل دخول
