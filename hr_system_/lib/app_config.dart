@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
@@ -27,18 +26,15 @@ class AppConfig {
     }
   }
 
-  /// 🧩 دالة داخلية لفحص الاتصال بالسيرفر
   static Future<bool> _checkServerConnection() async {
     try {
-      final uri = Uri.parse("$baseUrl/HealthCheck");
+      final uri = Uri.parse(
+        "$baseUrl/Auth/login",
+      ); // بدّل من /HealthCheck إلى /Auth/login
       final response = await http.get(uri).timeout(const Duration(seconds: 5));
-
-      // إذا كان السيرفر عندك ما فيه endpoint HealthCheck، جرّب /Auth/login
-      if (response.statusCode == 200) return true;
-      return false;
-    } on SocketException catch (_) {
-      return false;
-    } on Exception catch (_) {
+      return response.statusCode == 200 ||
+          response.statusCode == 401; // 401 مقبولة لأنها تطلب تسجيل دخول
+    } catch (_) {
       return false;
     }
   }
