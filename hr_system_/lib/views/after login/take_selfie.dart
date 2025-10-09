@@ -55,8 +55,6 @@ class _TakeSelfiePageState extends State<TakeSelfiePage> {
 
     if (success) {
       Get.offAll(() => const SignatureScreen());
-    } else {
-      Get.snackbar("Error", controller.errorMessage ?? "Failed to upload");
     }
   }
 
