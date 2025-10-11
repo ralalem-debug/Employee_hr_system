@@ -38,23 +38,23 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadData() async {
     setState(() => isLoading = true);
 
-    // 📦 اقرأ الـ userId من التخزين الآمن
+    //  اقرأ الـ userId من التخزين الآمن
     final storage = const FlutterSecureStorage();
     final userId = await storage.read(key: 'user_id');
 
     if (userId == null) {
       print("⚠️ No user_id found in secure storage!");
-      _showMsg("⚠️ لم يتم العثور على معرف المستخدم. يرجى تسجيل الدخول مجددًا.");
+      _showMsg("⚠️User ID not found. Please log in again.");
       setState(() => isLoading = false);
       return;
     }
 
     print("👤 Current userId: $userId");
 
-    // ✅ تحقق من وجود المستخدم داخل المكتب أولًا
+    //  تحقق من وجود المستخدم داخل المكتب أولًا
     final present = await controller.isAtOffice(userId);
 
-    // ✅ إذا كان داخل المكتب، اجلب بيانات الحضور
+    //  إذا كان داخل المكتب، اجلب بيانات الحضور
     AttendanceModel? att;
     if (present) {
       att = await controller.getCheckInOutTime();
@@ -113,7 +113,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 SizedBox(height: h * 0.04),
 
-                // دائرة الحالة
                 _buildStatusCircle(w),
 
                 SizedBox(height: h * 0.04),
