@@ -7,9 +7,9 @@ class ExamController extends GetxController {
   var exams = <ExamSummary>[].obs;
   var selectedExam = Rxn<ExamModel>();
   var isLoading = false.obs;
-  var errorMessage = "".obs; // 🆕 لتخزين الرسائل في حال الخطأ
+  var errorMessage = "".obs;
 
-  final String baseUrl = "http://192.168.1.116:8000/api"; // ✅ IP ثابت
+  final String baseUrl = "http://46.185.162.66:30211/api";
 
   // ✅ 1. Get Passed Exams
   Future<void> fetchPassedExams(String nonEmployeeId) async {
