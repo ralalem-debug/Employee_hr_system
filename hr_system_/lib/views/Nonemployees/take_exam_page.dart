@@ -27,7 +27,7 @@ class _TakeExamPageState extends State<TakeExamPage> {
     });
   }
 
-  /// 🔹 تحميل الـ nonEmployeeId من التخزين الآمن
+ 
   Future<void> _loadUserId() async {
     final id = await storage.read(key: "user_id");
     setState(() {
@@ -145,8 +145,8 @@ class _TakeExamPageState extends State<TakeExamPage> {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
-                        Get.back(); // يغلق الديالوج
-                        Get.back(); // يرجع للصفحة السابقة
+                        Get.back();
+                        Get.back(); 
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xff2563eb),

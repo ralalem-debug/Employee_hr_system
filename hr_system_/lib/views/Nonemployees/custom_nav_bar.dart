@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
+
 import 'package:hr_system_/views/Nonemployees/available_assessment_page.dart';
 import 'package:hr_system_/views/Nonemployees/non_employee_home_page.dart';
 import 'package:hr_system_/views/Nonemployees/non_employee_notifications_screen.dart';
 import 'package:hr_system_/views/Nonemployees/settings.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:jwt_decoder/jwt_decoder.dart';
 
 class CustomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -16,28 +17,28 @@ class CustomNavBar extends StatelessWidget {
 
     final savedId = await storage.read(key: "user_id");
     if (savedId != null && savedId.isNotEmpty) {
-      print("✅ Loaded nonEmployeeId from storage: $savedId");
+      debugPrint("✅ Loaded nonEmployeeId from storage: $savedId");
       return savedId;
     }
 
     final token = await storage.read(key: "auth_token");
     if (token == null || token.isEmpty) {
-      print("⚠️ No token found in storage (key: auth_token)");
+      debugPrint("⚠️ No token found in storage (key: auth_token)");
       return null;
     }
 
     try {
       final decoded = JwtDecoder.decode(token);
-      print("🟦 Token Claims: $decoded");
+      debugPrint("🟦 Token Claims: $decoded");
 
       final id =
           decoded["sub"] ??
           decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
-      print("✅ Extracted NonEmployee ID from token: $id");
+      debugPrint("✅ Extracted NonEmployee ID from token: $id");
 
       return id?.toString();
     } catch (e) {
-      print("❌ Failed to decode token: $e");
+      debugPrint("❌ Failed to decode token: $e");
       return null;
     }
   }
@@ -51,7 +52,6 @@ class CustomNavBar extends StatelessWidget {
       case 1:
         final nonEmployeeId = await _getNonEmployeeId();
         if (nonEmployeeId != null) {
-          print("🚀 Opening AvailableAssessmentPage for ID: $nonEmployeeId");
           Get.offAll(
             () => AvailableAssessmentPage(nonEmployeeId: nonEmployeeId),
           );
@@ -77,25 +77,41 @@ class CustomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BottomNavigationBar(
-      currentIndex: currentIndex,
-      onTap: _onTap,
-      backgroundColor: Colors.blue[800],
-      selectedItemColor: Colors.white,
-      unselectedItemColor: Colors.white70,
-      type: BottomNavigationBarType.fixed,
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: "HOME"),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.article_outlined),
-          label: "ASSESSMENT",
+    // حجم النص والرموز يتأقلم مع حجم الشاشة
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final double iconSize = screenWidth * 0.065; // نسبي للشاشة
+    final double fontSize = screenWidth * 0.03; // حجم خط نسبي
+
+    return SafeArea(
+      child: BottomNavigationBar(
+        currentIndex: currentIndex,
+        onTap: _onTap,
+        backgroundColor: Colors.blue[800],
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.white70,
+        type: BottomNavigationBarType.fixed,
+        iconSize: iconSize.clamp(20, 30), // يمنع أن يكون كبير جدًا أو صغير
+        selectedLabelStyle: TextStyle(
+          fontSize: fontSize.clamp(10, 14),
+          fontWeight: FontWeight.bold,
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.notifications_outlined),
-          label: "NOTIFICATION",
-        ),
-        BottomNavigationBarItem(icon: Icon(Icons.settings), label: "Settings"),
-      ],
+        unselectedLabelStyle: TextStyle(fontSize: fontSize.clamp(9, 13)),
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: "HOME"),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.article_outlined),
+            label: "ASSESSMENT",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.notifications_outlined),
+            label: "NOTIFICATION",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: "SETTINGS",
+          ),
+        ],
+      ),
     );
   }
 }
