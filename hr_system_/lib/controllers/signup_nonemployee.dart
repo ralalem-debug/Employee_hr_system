@@ -5,7 +5,7 @@ import 'package:hr_system_/app_config.dart';
 
 class NonEmployeeController extends GetxController {
   var isLoading = false.obs;
-  String baseUrl = "${AppConfig.baseUrl}/nonemployees"; // ✅ ديناميكي
+  String baseUrl = "${AppConfig.baseUrl}/nonemployees";
 
   Future<bool> signUp(NonEmployeeSignUpModel model) async {
     isLoading.value = true;
@@ -21,7 +21,6 @@ class NonEmployeeController extends GetxController {
     request.fields['Password'] = model.password;
     request.fields['ConfirmPassword'] = model.confirmPassword;
 
-    // ✅ رفع CV
     request.files.add(await http.MultipartFile.fromPath('CV', model.cvPath));
 
     try {

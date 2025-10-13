@@ -18,7 +18,7 @@ class ExamController extends GetxController {
       errorMessage.value = "";
 
       final url = "$baseUrl/exam/passed/$nonEmployeeId";
-      print("📡 Fetching exams from: $url");
+      print("📡 Fetching exams from: $baseUrl");
 
       final res = await http.get(
         Uri.parse(url),
