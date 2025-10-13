@@ -11,7 +11,6 @@ class ExamController extends GetxController {
 
   final String baseUrl = "http://46.185.162.66:30211/api";
 
-  // ✅ 1. Get Passed Exams
   Future<void> fetchPassedExams(String nonEmployeeId) async {
     try {
       isLoading.value = true;
@@ -31,7 +30,7 @@ class ExamController extends GetxController {
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
 
-        // ✅ الحالة الأولى: السيرفر رجع List of Strings (job IDs فقط)
+      
         if (data is List && data.isNotEmpty && data.first is String) {
           exams.value =
               data
@@ -59,7 +58,7 @@ class ExamController extends GetxController {
           print(errorMessage.value);
         }
       }
-      // 🔴 حالة 404: المستخدم ما عنده امتحانات
+  
       else if (res.statusCode == 404) {
         exams.clear();
         final body = jsonDecode(res.body);
@@ -67,7 +66,7 @@ class ExamController extends GetxController {
         errorMessage.value = "🚫 $detail";
         print("⚠️ No assessments found for this user (404).");
       }
-      // 🔴 أي كود آخر
+ 
       else {
         exams.clear();
         errorMessage.value = "❌ Server Error: ${res.statusCode}";
@@ -100,7 +99,7 @@ class ExamController extends GetxController {
       if (res.statusCode == 200) {
         final json = jsonDecode(res.body);
 
-        // ✅ السيرفر يرجّع exam + mcqs بشكل منفصل
+        
         final examData = json["exam"];
         final mcqList = json["mcqs"];
 
