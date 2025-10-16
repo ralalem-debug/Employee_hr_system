@@ -50,32 +50,31 @@ class SettingsScreen extends StatelessWidget {
 
     return SafeArea(
       child: Scaffold(
-        backgroundColor: const Color.fromARGB(255, 8, 112, 197),
+        backgroundColor: Colors.white, // 🔹 أزلنا الخلفية الزرقاء
         body: Obx(() {
           final profile = profileController.profile.value;
 
           return Column(
             children: [
-              Stack(
-                children: [
-                  Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.symmetric(
-                      vertical: size.height * 0.06,
-                      horizontal: size.width * 0.05,
-                    ),
+              // رأس الصفحة فقط أزرق
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(
+                  vertical: size.height * 0.05,
+                  horizontal: size.width * 0.05,
+                ),
+                decoration: const BoxDecoration(
+                  color: Color.fromARGB(255, 8, 112, 197),
+                  borderRadius: BorderRadius.vertical(
+                    bottom: Radius.circular(24),
                   ),
-                ],
+                ),
               ),
 
+              // باقي الصفحة أبيض
               Expanded(
                 child: Container(
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(24),
-                    ),
-                  ),
+                  decoration: const BoxDecoration(color: Colors.white),
                   child: ListView(
                     children: [
                       ListTile(
@@ -126,8 +125,7 @@ class SettingsScreen extends StatelessWidget {
                         onTap: () {
                           Get.to(
                             () => ChangePasswordScreen(
-                              token:
-                                  "", // مرر التوكن الحقيقي من LoginController
+                              token: "",
                               isFirstLogin: false,
                             ),
                           );

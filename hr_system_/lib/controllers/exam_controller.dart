@@ -9,7 +9,7 @@ class ExamController extends GetxController {
   var isLoading = false.obs;
   var errorMessage = "".obs;
 
-  final String baseUrl = "http://46.185.162.66:30211/api";
+  final String baseUrl = "http://46.185.162.66:30212/api";
 
   Future<void> fetchPassedExams(String nonEmployeeId) async {
     try {
@@ -30,7 +30,6 @@ class ExamController extends GetxController {
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
 
-      
         if (data is List && data.isNotEmpty && data.first is String) {
           exams.value =
               data
@@ -44,37 +43,29 @@ class ExamController extends GetxController {
                   )
                   .toList();
 
-          print("✅ Loaded ${exams.length} job(s) from API (List<String>).");
-        }
-        // ✅ الحالة الثانية: رجع List of Objects (مع تفاصيل كاملة)
-        else if (data is List && data.isNotEmpty && data.first is Map) {
+          print(" Loaded ${exams.length} job(s) from API (List<String>).");
+        } else if (data is List && data.isNotEmpty && data.first is Map) {
           exams.value = data.map((e) => ExamSummary.fromJson(e)).toList();
-          print("✅ Loaded ${exams.length} job(s) from API (List<Map>).");
-        }
-        // ⚠️ لا يوجد بيانات فعلية
-        else {
+          print(" Loaded ${exams.length} job(s) from API (List<Map>).");
+        } else {
           exams.clear();
           errorMessage.value = "⚠️ No data returned from API.";
           print(errorMessage.value);
         }
-      }
-  
-      else if (res.statusCode == 404) {
+      } else if (res.statusCode == 404) {
         exams.clear();
         final body = jsonDecode(res.body);
         final detail = body['detail'] ?? "No assessments available.";
-        errorMessage.value = "🚫 $detail";
-        print("⚠️ No assessments found for this user (404).");
-      }
- 
-      else {
+        errorMessage.value = " $detail";
+        print(" No assessments found for this user (404).");
+      } else {
         exams.clear();
-        errorMessage.value = "❌ Server Error: ${res.statusCode}";
+        errorMessage.value = " Server Error: ${res.statusCode}";
         print(errorMessage.value);
       }
     } catch (e) {
       exams.clear();
-      errorMessage.value = "❌ Error fetching exams: $e";
+      errorMessage.value = " Error fetching exams: $e";
       print(errorMessage.value);
     } finally {
       isLoading.value = false;
@@ -99,22 +90,18 @@ class ExamController extends GetxController {
       if (res.statusCode == 200) {
         final json = jsonDecode(res.body);
 
-        
-        final examData = json["exam"];
-        final mcqList = json["mcqs"];
-
-        if (examData == null || mcqList == null) {
-          throw Exception("Missing 'exam' or 'mcqs' in response.");
+        // ✅ يتعامل مع أي شكل للـ JSON
+        if (json["exam"] is List) {
+          // الحالة اللي السيرفر يرجع فيها exam كـ List
+          selectedExam.value = ExamModel.fromJson({
+            "exam": null,
+            "mcqs": json["exam"],
+          });
+        } else if (json["mcqs"] is List) {
+          selectedExam.value = ExamModel.fromJson(json);
+        } else {
+          throw Exception("Invalid exam data format");
         }
-
-        final merged = {
-          ...Map<String, dynamic>.from(examData),
-          "mcqs": mcqList,
-        };
-
-        selectedExam.value = ExamModel.fromJson(
-          Map<String, dynamic>.from(merged),
-        );
 
         print(
           "✅ Exam loaded successfully with ${selectedExam.value?.mcqs.length ?? 0} questions.",

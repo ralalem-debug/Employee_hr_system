@@ -27,7 +27,6 @@ class _TakeExamPageState extends State<TakeExamPage> {
     });
   }
 
- 
   Future<void> _loadUserId() async {
     final id = await storage.read(key: "user_id");
     setState(() {
@@ -146,7 +145,7 @@ class _TakeExamPageState extends State<TakeExamPage> {
                     child: ElevatedButton(
                       onPressed: () {
                         Get.back();
-                        Get.back(); 
+                        Get.back();
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xff2563eb),
@@ -189,14 +188,22 @@ class _TakeExamPageState extends State<TakeExamPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 1,
-        iconTheme: const IconThemeData(color: Colors.black),
+        backgroundColor: const Color(0xfff8fafc),
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
+        iconTheme: const IconThemeData(color: Colors.black87),
         title: const Text(
           "Take Exam",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
+          style: TextStyle(
+            color: Color(0xff0f172a),
+            fontWeight: FontWeight.w600,
+            fontSize: 18,
+          ),
         ),
+        centerTitle: true,
       ),
+
       body: Obx(() {
         if (controller.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
