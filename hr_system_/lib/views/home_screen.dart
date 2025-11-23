@@ -249,7 +249,7 @@ class _HomeScreenState extends State<HomeScreen> {
       animation: true,
       circularStrokeCap: CircularStrokeCap.round,
       backgroundColor: Colors.blueGrey.shade100,
-      progressColor: isAtOffice ? Colors.teal.shade400 : Colors.redAccent,
+      progressColor: isAtOffice ? Colors.green.shade500 : Colors.redAccent,
       center:
           isLoading
               ? const CircularProgressIndicator()
@@ -257,8 +257,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    isAtOffice ? Icons.emoji_events : Icons.location_off,
-                    color: isAtOffice ? Colors.teal.shade400 : Colors.redAccent,
+                    isAtOffice ? Icons.person_pin_circle : Icons.location_off,
+                    color:
+                        isAtOffice ? Colors.green.shade500 : Colors.redAccent,
                     size: w * 0.15,
                   ),
                   const SizedBox(height: 12),

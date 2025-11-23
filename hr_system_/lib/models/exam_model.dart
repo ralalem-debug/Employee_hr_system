@@ -12,8 +12,8 @@ class ExamModel {
   });
 
   factory ExamModel.fromJson(Map<String, dynamic> json) {
-    // ✅ نقرأ الـ mcqs من المفتاح "mcqs"
-    final mcqList = json["mcqs"] as List? ?? [];
+    // ✅ يتعامل مع كل الحالات الممكنة
+    final mcqList = (json["mcqs"] ?? json["exam"]) as List? ?? [];
 
     return ExamModel(
       section: json["section"] ?? "",
@@ -33,7 +33,6 @@ class ExamModel {
   }
 }
 
-// 🧩 موديل الأسئلة (MCQs)
 class McqModel {
   final String question;
   final Map<String, String> options;
@@ -41,7 +40,7 @@ class McqModel {
   final String? skill;
   final String? difficulty;
   final String? rationale;
-  String? selectedAnswer; // 🟢 المستخدم بيختارها محليًا
+  String? selectedAnswer;
 
   McqModel({
     required this.question,
@@ -54,10 +53,9 @@ class McqModel {
   });
 
   factory McqModel.fromJson(Map<String, dynamic> json) {
-    // ✅ المفتاح في JSON اسمه "mcq" وليس "question"
     final opts = Map<String, String>.from(json["options"] ?? {});
     return McqModel(
-      question: json["mcq"] ?? "",
+      question: json["question"] ?? "", 
       options: opts,
       correctAnswer: json["correct"] ?? "",
       skill: json["skill"],
@@ -68,7 +66,7 @@ class McqModel {
 
   Map<String, dynamic> toJson() {
     return {
-      "mcq": question,
+      "question": question,
       "options": options,
       "correct": correctAnswer,
       "skill": skill,

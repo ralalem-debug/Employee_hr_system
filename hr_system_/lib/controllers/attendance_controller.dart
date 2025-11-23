@@ -7,10 +7,8 @@ class AttendanceController {
   final storage = const FlutterSecureStorage();
   static const _timeout = Duration(seconds: 15);
 
-  // 🔹 اقرأ التوكن من التخزين الآمن
   Future<String?> _getToken() => storage.read(key: 'auth_token');
 
-  // 🔹 هيدر الطلبات
   Map<String, String> _headers(String? token) => {
     'Accept': 'application/json',
     if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
@@ -35,7 +33,6 @@ class AttendanceController {
     }
   }
 
-  // ✅ الحصول على وقت CheckIn و CheckOut
   Future<AttendanceModel?> getCheckInOutTime() async {
     final token = await _getToken();
     try {
@@ -61,7 +58,6 @@ class AttendanceController {
     }
   }
 
-  // ✅ تنفيذ Check-in
   Future<bool> doCheckIn() async {
     final token = await _getToken();
     try {
@@ -85,7 +81,6 @@ class AttendanceController {
     }
   }
 
-  // ✅ تنفيذ Check-out
   Future<bool> doCheckOut() async {
     final token = await _getToken();
     try {

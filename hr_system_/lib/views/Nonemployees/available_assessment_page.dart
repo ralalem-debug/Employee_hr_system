@@ -29,24 +29,20 @@ class _AvailableAssessmentPageState extends State<AvailableAssessmentPage> {
     return Scaffold(
       backgroundColor: const Color(0xfff8fafc),
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 2,
+        backgroundColor: const Color(0xfff8fafc), 
+        elevation: 0, 
+        scrolledUnderElevation: 0, 
         centerTitle: true,
+        surfaceTintColor:
+            Colors.transparent, 
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black87),
           onPressed: () {
             Get.offAll(() => const NonEmployeeHomeScreen());
           },
         ),
-        title: const Text(
-          "Online Assessments",
-          style: TextStyle(
-            color: Color(0xff0f172a),
-            fontWeight: FontWeight.w700,
-            fontSize: 18,
-          ),
-        ),
       ),
+
       body: Obx(() {
         if (controller.isLoading.value) {
           return const Center(

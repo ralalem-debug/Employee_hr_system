@@ -77,40 +77,58 @@ class CustomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // حجم النص والرموز يتأقلم مع حجم الشاشة
     final double screenWidth = MediaQuery.of(context).size.width;
-    final double iconSize = screenWidth * 0.065; // نسبي للشاشة
-    final double fontSize = screenWidth * 0.03; // حجم خط نسبي
+    final double iconSize = screenWidth * 0.065;
+    final double fontSize = screenWidth * 0.03;
 
     return SafeArea(
-      child: BottomNavigationBar(
-        currentIndex: currentIndex,
-        onTap: _onTap,
-        backgroundColor: Colors.blue[800],
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white70,
-        type: BottomNavigationBarType.fixed,
-        iconSize: iconSize.clamp(20, 30), // يمنع أن يكون كبير جدًا أو صغير
-        selectedLabelStyle: TextStyle(
-          fontSize: fontSize.clamp(10, 14),
-          fontWeight: FontWeight.bold,
+      child: Padding(
+        padding: const EdgeInsets.all(10.0), // مسافة صغيرة عن الحواف
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(25), // حواف شبه دائرية
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.blue[800],
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.25),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: BottomNavigationBar(
+              currentIndex: currentIndex,
+              onTap: _onTap,
+              backgroundColor: Colors.transparent, // لأن اللون من الـ Container
+              elevation: 0,
+              selectedItemColor: Colors.white,
+              unselectedItemColor: Colors.white70,
+              type: BottomNavigationBarType.fixed,
+              iconSize: iconSize.clamp(20, 30),
+              selectedLabelStyle: TextStyle(
+                fontSize: fontSize.clamp(10, 14),
+                fontWeight: FontWeight.bold,
+              ),
+              unselectedLabelStyle: TextStyle(fontSize: fontSize.clamp(9, 13)),
+              items: const [
+                BottomNavigationBarItem(icon: Icon(Icons.home), label: "HOME"),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.article_outlined),
+                  label: "ASSESSMENT",
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.notifications_outlined),
+                  label: "NOTIFICATION",
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.settings),
+                  label: "SETTINGS",
+                ),
+              ],
+            ),
+          ),
         ),
-        unselectedLabelStyle: TextStyle(fontSize: fontSize.clamp(9, 13)),
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "HOME"),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.article_outlined),
-            label: "ASSESSMENT",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications_outlined),
-            label: "NOTIFICATION",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: "SETTINGS",
-          ),
-        ],
       ),
     );
   }
