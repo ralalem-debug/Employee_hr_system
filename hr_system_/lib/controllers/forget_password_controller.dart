@@ -36,7 +36,7 @@ class ForgetPasswordController extends GetxController {
               "Content-Type": "application/json",
               "Accept": "application/json",
             },
-            body: jsonEncode({"email": email.trim()}),
+            body: jsonEncode({"Email": email.trim()}),
           )
           .timeout(_timeout);
 

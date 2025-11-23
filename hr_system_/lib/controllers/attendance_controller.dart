@@ -33,7 +33,6 @@ class AttendanceController {
     }
   }
 
-  // ✅ الحصول على وقت CheckIn و CheckOut
   Future<AttendanceModel?> getCheckInOutTime() async {
     final token = await _getToken();
     try {
@@ -59,7 +58,6 @@ class AttendanceController {
     }
   }
 
-  // ✅ تنفيذ Check-in
   Future<bool> doCheckIn() async {
     final token = await _getToken();
     try {
@@ -83,7 +81,6 @@ class AttendanceController {
     }
   }
 
-  // ✅ تنفيذ Check-out
   Future<bool> doCheckOut() async {
     final token = await _getToken();
     try {

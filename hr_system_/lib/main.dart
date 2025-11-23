@@ -16,8 +16,8 @@ import 'views/settings/privacypolicy.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await debugDiscovery(); // للتأكد من إعدادات التطوير
-  await AppConfig.init(); // 🔹 هذه الآن آمنة ولن تسبب crash
+  await debugDiscovery();
+  await AppConfig.init();
   runApp(const OnsetWayApp());
 }
 
@@ -52,10 +52,8 @@ class OnsetWayApp extends StatelessWidget {
         ),
       ),
 
-      /// 🔹 أول شاشة
       initialRoute: '/',
 
-      /// 🔹 تعريف الصفحات
       getPages: [
         GetPage(
           name: '/coordinator-evaluation',
